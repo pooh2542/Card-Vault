@@ -92,7 +92,10 @@
         </section>
 
         <section id="tab-inventory" class="tab-content">
-            <h3 class="text-lg font-semibold mb-4 tracking-tight">In Stock (<span id="stock-count">0</span>)</h3>
+            <h3 class="text-lg font-semibold mb-4 tracking-tight flex justify-between items-end">
+                <span>In Stock (<span id="stock-count">0</span>)</span>
+                <span class="text-sm font-medium text-gray-500" id="stock-value">Value: ฿0</span>
+            </h3>
             <div id="inventory-list" class="space-y-3"></div>
         </section>
 
@@ -254,7 +257,6 @@
         let currentMonthView = null;
         let currentSearchQuery = "";
 
-        // รองรับทั้งรูปภาพโปเกบอลที่คุณอัปโหลด และ Emoji ปกติ
         const gameIcons = {
             onepiece: '🏴‍☠️', 
             pokemon: '🗲', 
@@ -326,7 +328,18 @@
         function changeMonthFilter() { currentMonthView = document.getElementById('month-filter').value; updateUI(); }
         function handleSearch() { currentSearchQuery = document.getElementById('search-sales').value.toLowerCase().trim(); updateUI(); }
 
-        // --- CRUD Functions ---
+        // --- เพิ่ม/นำเข้า ฟังก์ชัน ClearAllData กลับมาแล้ว ---
+        function clearAllData() {
+            if(inventory.length === 0) return alert('ไม่มีข้อมูลให้ลบครับ');
+            if(confirm('⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการ "ลบข้อมูลทั้งหมด"?\n(แนะนำให้กด Export เก็บไว้ก่อน)')) {
+                if(confirm('ยืนยันอีกครั้ง ข้อมูลที่ลบแล้วจะไม่สามารถกู้คืนได้?')) { 
+                    inventory = []; 
+                    saveDb(); 
+                    alert('ลบข้อมูลทั้งหมดเรียบร้อยแล้ว');
+                }
+            }
+        }
+
         function addCard(e) {
             e.preventDefault();
             inventory.push({
@@ -347,10 +360,20 @@
             switchTab('inventory');
         }
 
+        // --- อัปเดตฟังก์ชัน Toggle Lock/Unlock ให้สลับไปมาได้ ---
         function toggleCollection(id) {
-            if(confirm('คุณต้องการปลดล็อคการ์ดใบนี้เพื่อนำไปขาย ใช่หรือไม่?')) {
-                const index = inventory.findIndex(i => i.id === id);
-                inventory[index].isCollection = false; saveDb();
+            const index = inventory.findIndex(i => i.id === id);
+            const item = inventory[index];
+            if(item.isCollection) {
+                if(confirm('คุณต้องการ "ปลดล็อค" การ์ดใบนี้เพื่อนำไปขาย ใช่หรือไม่?')) {
+                    inventory[index].isCollection = false; 
+                    saveDb();
+                }
+            } else {
+                if(confirm('คุณต้องการ "ล็อค" การ์ดใบนี้เก็บเข้าคอลเลกชัน (ป้องกันการขาย) ใช่หรือไม่?')) {
+                    inventory[index].isCollection = true; 
+                    saveDb();
+                }
             }
         }
 
@@ -432,11 +455,8 @@
             saveDb(); closeEditModal();
         }
 
-        // --- ฟังก์ชันจัดส่งออกเป็นไฟล์ Excel (.xlsx) ---
         function exportToExcel() {
             if(inventory.length === 0) return alert('ยังไม่มีข้อมูลให้ส่งออกครับ');
-            
-            // เตรียมจัดรูปแบบข้อมูลให้คนอ่านรู้เรื่องและสวยงามใน Excel
             const excelData = inventory.map(item => ({
                 'ID': item.id,
                 'Game': gameNames[item.game] || item.game,
@@ -455,12 +475,9 @@
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Card Inventory");
-            
-            // สั่งดาวน์โหลดไฟล์ออกมา
             XLSX.writeFile(workbook, `CardVault_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // --- ฟังก์ชันนำเข้าข้อมูลจากไฟล์ Excel (.xlsx) ---
         function importFromExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -474,7 +491,6 @@
                     
                     if (excelData.length === 0) return alert('ไม่พบข้อมูลในไฟล์ Excel');
 
-                    // ตรรกะแปลงชื่อภาษาไทยกลับมาเป็น Key ระบบ
                     const reverseGameNames = {};
                     Object.keys(gameNames).forEach(k => reverseGameNames[gameNames[k].toLowerCase()] = k);
 
@@ -508,10 +524,9 @@
                 }
             };
             reader.readAsArrayBuffer(file);
-            event.target.value = ''; // Reset Input
+            event.target.value = '';
         }
 
-        // --- Render Chart ---
         function renderProfitChart(items, viewMode) {
             try {
                 if (typeof Chart === 'undefined') return;
@@ -580,14 +595,15 @@
             } catch (err) { console.warn('กราฟมีปัญหา:', err); }
         }
 
-        // --- Main UI Updater ---
         function updateUI() {
             try {
                 const stockItems = inventory.filter(i => i.status === 'stock');
                 const allSoldItems = inventory.filter(i => i.status === 'sold');
 
                 const nowYYYYMM = getYYYYMM(new Date());
-                if (!currentMonthView) currentMonthView = nowYYYYMM; 
+                
+                // --- ตั้งค่า Default ให้เป็น 'all' (รวมทั้งหมด) ทันทีที่เปิดแอป ---
+                if (!currentMonthView) currentMonthView = 'all'; 
 
                 const monthsSet = new Set();
                 allSoldItems.forEach(i => { if(i.dateSold) monthsSet.add(getYYYYMM(i.dateSold)); });
@@ -614,9 +630,11 @@
                 displaySoldItems.sort((a, b) => new Date(b.dateSold || 0) - new Date(a.dateSold || 0));
                 stockItems.sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0));
 
+                // --- อัปเดตยอดรวมมูลค่าของในสต็อค ---
                 document.getElementById('stock-count').innerText = stockItems.length;
+                const stockValueTotal = stockItems.reduce((sum, item) => sum + item.cost, 0);
+                document.getElementById('stock-value').innerText = `Value: ${formatMoney(stockValueTotal)}`;
 
-                // คำนวณเงินทั้งหมด
                 const totalInvestment = inventory.reduce((sum, item) => sum + item.cost, 0);
                 const totalRev = displaySoldItems.reduce((sum, item) => sum + item.sellPrice, 0);
                 const soldItemsCost = displaySoldItems.reduce((sum, item) => sum + item.cost, 0);
@@ -631,7 +649,6 @@
 
                 renderProfitChart(displaySoldItems, currentMonthView);
 
-                // ค้นหาคำ
                 let listSoldItems = displaySoldItems;
                 if (currentSearchQuery) {
                     listSoldItems = listSoldItems.filter(i => {
@@ -671,6 +688,12 @@
                                 <div class="text-[10px] text-gray-500 truncate mt-0.5 flex items-center">
                                     ${customerTag ? customerTag + ' <span class="text-gray-300 mx-1">|</span> ' : ''}${gameLabelHTML}
                                 </div>
+                                
+                                <div class="mt-1 flex items-center justify-between bg-gray-50 border border-gray-100 rounded px-1.5 py-0.5">
+                                    <span class="text-[9px] text-gray-500">Cost: ${formatMoney(item.cost)}</span>
+                                    <span class="text-[9px] text-gray-700 font-medium">Sold: ${formatMoney(item.sellPrice)}</span>
+                                </div>
+                                
                                 <div class="mt-1 flex items-center justify-between">
                                      <span class="text-[10px] text-gray-400">${soldDateStr}</span>
                                      <span class="text-[11px] font-bold ${isPositive ? 'text-green-500' : 'text-red-500'}">${isPositive ? '+' : ''}${formatMoney(profit)}</span>
@@ -683,9 +706,14 @@
                         </div>`;
                     } else {
                         const collectionBadge = item.isCollection ? `<span class="bg-gray-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm block mb-1.5 w-max ml-auto">🔒 KEEP</span>` : '';
+                        
+                        // ปรับ UI ให้มีปุ่ม Lock / Unlock ตามสถานะปัจจุบัน
                         const actionBtn = item.isCollection 
-                            ? `<button onclick="toggleCollection(${item.id})" class="text-[11px] font-semibold text-gray-500 bg-gray-100 px-3 py-2 rounded-xl active:scale-95 transition-transform cursor-pointer">🔒 Kept</button>`
-                            : `<button onclick="openSellModal(${item.id})" class="bg-black text-white text-xs font-semibold px-4 py-2 rounded-xl active:scale-95 transition-transform cursor-pointer">Sell</button>`;
+                            ? `<div class="flex flex-col justify-end h-full"><button onclick="toggleCollection(${item.id})" class="text-[11px] font-semibold text-gray-500 bg-gray-100 px-3 py-2 rounded-xl active:scale-95 transition-transform cursor-pointer">🔓 Unlock</button></div>`
+                            : `<div class="flex flex-col items-end gap-1.5">
+                                   <button onclick="toggleCollection(${item.id})" class="text-[9px] font-semibold text-gray-400 hover:text-black cursor-pointer transition-colors px-1">🔒 Lock</button>
+                                   <button onclick="openSellModal(${item.id})" class="bg-black text-white text-xs font-semibold px-4 py-2 rounded-xl active:scale-95 transition-transform cursor-pointer w-full text-center">Sell</button>
+                               </div>`;
                         
                         return `
                         <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 relative flex items-center gap-3">
@@ -710,17 +738,6 @@
                 document.getElementById('sold-list').innerHTML = listSoldItems.length ? listSoldItems.map(item => createCardHTML(item, true)).join('') : '<p class="text-gray-400 text-sm text-center py-6">ไม่พบรายการที่ค้นหา</p>';
 
             } catch (error) { console.error("เกิดข้อผิดพลาดในการโหลด UI:", error); }
-        }
-
-         // --- Clear DATA ---
-        function clearAllData() {
-    console.log("ปุ่มถูกกดแล้ว!"); // ลองเช็คในหน้า Inspect ของเบราว์เซอร์ว่าขึ้นไหม
-    if(inventory.length === 0) return;
-    if(confirm('⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการ "ลบข้อมูลทั้งหมด"?')) {
-        inventory = []; 
-        saveDb(); 
-        alert('ลบข้อมูลเรียบร้อย');
-            }
         }
 
         updateRarityOptions(); updateUI();
