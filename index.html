@@ -257,7 +257,7 @@
         // รองรับทั้งรูปภาพโปเกบอลที่คุณอัปโหลด และ Emoji ปกติ
         const gameIcons = {
             onepiece: '🏴‍☠️', 
-            pokemon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pok%C3%A9_Ball_icon.svg/512px-Pok%C3%A9_Ball_icon.svg.png', 
+            pokemon: '🗲', 
             lorcana: '✨', 
             talingchan: '⚔️', 
             dragonball: '🐉', 
@@ -710,6 +710,17 @@
                 document.getElementById('sold-list').innerHTML = listSoldItems.length ? listSoldItems.map(item => createCardHTML(item, true)).join('') : '<p class="text-gray-400 text-sm text-center py-6">ไม่พบรายการที่ค้นหา</p>';
 
             } catch (error) { console.error("เกิดข้อผิดพลาดในการโหลด UI:", error); }
+        }
+
+         // --- Clear DATA ---
+        function clearAllData() {
+    console.log("ปุ่มถูกกดแล้ว!"); // ลองเช็คในหน้า Inspect ของเบราว์เซอร์ว่าขึ้นไหม
+    if(inventory.length === 0) return;
+    if(confirm('⚠️ คำเตือน: คุณแน่ใจหรือไม่ว่าต้องการ "ลบข้อมูลทั้งหมด"?')) {
+        inventory = []; 
+        saveDb(); 
+        alert('ลบข้อมูลเรียบร้อย');
+            }
         }
 
         updateRarityOptions(); updateUI();
