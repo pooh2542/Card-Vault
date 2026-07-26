@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CardVault Pro</title>
+    <title>CardVault (Local Edition)</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CardVault">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
-    <meta name="description" content="แอปจัดการคลังการ์ดเทรดดิ้งการ์ด บันทึกต้นทุน ราคาขาย และกำไร ใช้งานได้แม้ออฟไลน์">
+    <meta name="description" content="แอปจัดการคลังการ์ดเทรดดิ้งการ์ด (Local Edition) ข้อมูลเก็บในเครื่อง">
+    
+    <!-- เปลี่ยนชื่อไฟล์ Icon ให้ตรงกับที่คุณใช้งานจริง -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="manifest" href="manifest.json">
@@ -23,10 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-    <!-- ================== Firebase (Auth + Firestore) ================== -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- ลบ Script ของ Firebase ออกทั้งหมด เพราะเราใช้ LocalStorage -->
 
     <style>
         body { font-family: "Sukhumvit Set", "Prompt", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
@@ -41,7 +40,6 @@
         input[type="search"] { background-image: none; }
         input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer; }
         .date-wrapper { position: relative; }
-        /* Smooth Scrollbar for Modals */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -49,37 +47,12 @@
 </head>
 <body class="bg-slate-50/50 text-slate-800 pb-32 min-h-[100dvh] antialiased selection:bg-slate-200">
 
-    <!-- ================== หน้าจอ Login ================== -->
-    <div id="login-screen" class="fixed inset-0 z-50 bg-white flex items-center justify-center px-6">
-        <div class="w-full max-w-sm">
-            <div class="text-center mb-10">
-                <div class="w-16 h-16 bg-slate-900 rounded-2xl mx-auto mb-5 flex items-center justify-center text-white text-2xl font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)]">CV</div>
-                <h1 class="text-2xl font-semibold tracking-tight text-slate-900">CardVault Pro</h1>
-                <p class="text-sm text-slate-400 mt-1.5">Sign in to sync your inventory</p>
-            </div>
-            <form id="login-form" onsubmit="handleLogin(event)" novalidate>
-                <div class="mb-5">
-                    <label class="block text-[11px] font-semibold text-slate-400 tracking-wider mb-2 uppercase">Email</label>
-                    <input type="email" id="login-email" autocomplete="username" placeholder="you@example.com" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none transition-all" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-[11px] font-semibold text-slate-400 tracking-wider mb-2 uppercase">Password</label>
-                    <input type="password" id="login-password" autocomplete="current-password" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-slate-900 focus:bg-white outline-none transition-all" required>
-                </div>
-                <p id="login-error" class="hidden text-xs text-red-500 font-medium mb-4 px-1"></p>
-                <button type="submit" id="login-submit-btn" class="w-full bg-slate-900 text-white font-medium text-base py-4 rounded-2xl active:scale-[0.98] transition-all shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.16)] cursor-pointer mt-4">เข้าสู่ระบบ</button>
-            </form>
-            <p class="text-[11px] text-slate-400 text-center mt-8">ยังไม่มีบัญชี? ติดต่อแอดมินทีมเพื่อขอสิทธิ์เข้าใช้งาน</p>
-        </div>
-    </div>
-
-    <!-- ================== ตัวแอปหลัก ================== -->
-    <div id="app-shell" class="hidden">
+    <!-- ลบหน้าต่าง Login ออก ข้ามมาที่ App Shell เลย -->
+    <div id="app-shell" class="block">
 
     <header class="bg-white/70 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-100/60 px-6 py-5 pt-12 transition-all">
         <div class="flex items-center justify-between mb-1.5">
-            <span id="current-user-email" class="text-[10px] text-slate-400 font-medium truncate max-w-[70%]"></span>
-            <button onclick="handleLogout()" class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider cursor-pointer active:scale-95 transition-transform hover:text-slate-700">ออกจากระบบ</button>
+            <span class="text-[10px] text-slate-400 font-medium truncate max-w-[70%]">🔒 Local Workspace (ออฟไลน์)</span>
         </div>
         <h1 class="text-[22px] font-semibold tracking-tight text-center text-slate-900" id="header-title">Overview</h1>
     </header>
@@ -92,10 +65,6 @@
                 <button id="app-banner-action" class="bg-white text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition-transform cursor-pointer"></button>
                 <button id="app-banner-dismiss" onclick="dismissAppBanner()" class="text-slate-400 hover:text-white text-lg leading-none px-1 cursor-pointer">×</button>
             </div>
-        </div>
-
-        <div id="offline-pill" class="hidden bg-amber-50/80 backdrop-blur-sm text-amber-700 border border-amber-100/60 rounded-2xl px-4 py-2.5 mb-5 text-xs font-medium text-center">
-            📡 ออฟไลน์อยู่ — ข้อมูลยังใช้งานและบันทึกในเครื่องได้
         </div>
 
         <section id="tab-dashboard" class="tab-content active">
@@ -151,11 +120,8 @@
                         ↓ Import Excel <input type="file" id="import-file" class="hidden" accept=".xlsx, .xls" onchange="importFromExcel(event)">
                     </label>
                 </div>
-                <button onclick="clearAllData()" 
-        class="w-full bg-red-50/50 text-red-500 text-xs font-semibold py-3.5 rounded-2xl 
-               active:scale-95 transition-all border border-red-100/50 
-               flex items-center justify-center gap-2 cursor-pointer relative z-20 hover:bg-red-50">
-    ⚠️ Clear All Data</button>
+                <button onclick="clearAllData()" class="w-full bg-red-50/50 text-red-500 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all border border-red-100/50 flex items-center justify-center gap-2 cursor-pointer relative z-20 hover:bg-red-50">
+                ⚠️ Clear All Data</button>
             </div>
         </section>
 
@@ -178,7 +144,7 @@
                         <p class="font-bold text-sm text-slate-700" id="stock-value-overview">฿0</p>
                     </div>
                 </div>
-                <p class="text-[10px] text-slate-400 text-center mt-4 leading-relaxed">💡 เงินสด + มูลค่าสต็อก = เงินลงทุน Owner − เงินที่ถอนไปแล้ว + กำไรสุทธิสะสม<br>ถ้าเงินสดน้อยกว่าที่คิด แปลว่ากำไรบางส่วน "จม" อยู่ในสต็อก ไม่ได้หายไปไหน</p>
+                <p class="text-[10px] text-slate-400 text-center mt-4 leading-relaxed">💡 เงินสด + มูลค่าสต็อก = เงินลงทุน Owner − เงินที่ถอนไปแล้ว + กำไรสุทธิสะสม</p>
             </div>
 
             <button onclick="openExpenseModal()" class="w-full bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 mb-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
@@ -351,7 +317,6 @@
                 </label>
             </div>
             
-            <!-- ====== ใส่ Options ของเกมกลับเข้ามาแล้ว ====== -->
             <div class="mb-4">
                 <label class="block text-[10px] font-bold text-slate-400 tracking-wider mb-2 uppercase">Card Game</label>
                 <select id="edit-game" onchange="updateEditRarityOptions()" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-slate-900 outline-none appearance-none cursor-pointer">
@@ -485,7 +450,6 @@
         </div>
     </div>
 
-    <!-- ================== Expense Modal (รายจ่ายอื่นๆ) ================== -->
     <div id="expense-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-md z-50 flex items-center justify-center p-6">
         <div class="bg-white rounded-[2rem] p-7 w-full max-w-sm shadow-2xl scale-100 transition-transform max-h-[90vh] overflow-y-auto border border-white">
             <h3 class="text-xl font-bold mb-6 text-slate-900">🧾 รายจ่ายอื่นๆ</h3>
@@ -528,7 +492,6 @@
         </div>
     </div>
 
-    <!-- ================== Draw Modal (ถอนกำไร) ================== -->
     <div id="draw-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-md z-50 flex items-center justify-center p-6">
         <div class="bg-white rounded-[2rem] p-7 w-full max-w-sm shadow-2xl scale-100 transition-transform max-h-[90vh] overflow-y-auto border border-white">
             <h3 class="text-xl font-bold mb-1 text-slate-900">💸 ถอนกำไร (Owner Draw)</h3>
@@ -562,37 +525,38 @@
         </div>
     </div>
 
-    </div><!-- /#app-shell -->
+    </div>
 
     <script>
-        // ================== Firebase Config ==================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCdozbu2ppNwdZWI54xkKabNnl-SA9sOcI",
-            authDomain: "cardvault-pro-d7ecb.firebaseapp.com",
-            projectId: "cardvault-pro-d7ecb",
-            storageBucket: "cardvault-pro-d7ecb.firebasestorage.app",
-            messagingSenderId: "539810352697",
-            appId: "1:539810352697:web:985fd3408db625c4aac7e8"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const cardsCollection = db.collection('cards');
-        const settingsDoc = db.collection('meta').doc('settings');
-        const expensesCollection = db.collection('expenses');
-        let expenses = [];
-        let unsubscribeExpensesListener = null;
-        const drawsCollection = db.collection('draws');
-        let draws = [];
-        let unsubscribeDrawsListener = null;
-        let ownerCapital = 0;
-        let unsubscribeSettingsListener = null;
+        // ================== ระบบ LocalStorage (บันทึกในเครื่อง 100%) ==================
+        let inventory = JSON.parse(localStorage.getItem('cv_local_inventory')) || [];
+        let expenses = JSON.parse(localStorage.getItem('cv_local_expenses')) || [];
+        let draws = JSON.parse(localStorage.getItem('cv_local_draws')) || [];
+        let ownerCapital = parseFloat(localStorage.getItem('cv_local_capital')) || 0;
+        let profitChartInstance = null;
+        let currentMonthView = null;
+        let currentSearchQuery = "";
 
-        // ================== Cloudinary ==================
+        function saveLocalData() {
+            localStorage.setItem('cv_local_inventory', JSON.stringify(inventory));
+            localStorage.setItem('cv_local_expenses', JSON.stringify(expenses));
+            localStorage.setItem('cv_local_draws', JSON.stringify(draws));
+            localStorage.setItem('cv_local_capital', ownerCapital.toString());
+            updateUI();
+        }
+
+        function generateId() {
+            return Date.now().toString() + Math.random().toString(36).substr(2, 5);
+        }
+
+        // ================== Cloudinary (อัปโหลดรูปภาพยังต้องต่อเน็ต) ==================
         const CLOUDINARY_CLOUD_NAME = 'apleyypc';
         const CLOUDINARY_UPLOAD_PRESET = 'cardvault_unsigned';
 
         async function uploadToCloudinary(file) {
+            if (!navigator.onLine) {
+                throw new Error('การอัปโหลดรูปภาพจำเป็นต้องใช้อินเทอร์เน็ตครับ');
+            }
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
@@ -646,276 +610,6 @@
             document.getElementById(`${prefix}-image-placeholder`).classList.remove('hidden');
         }
 
-        let inventory = [];
-        let profitChartInstance = null;
-        let currentMonthView = null;
-        let currentSearchQuery = "";
-        let unsubscribeInventoryListener = null; 
-
-        // ================== Auth ==================
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-            const errorEl = document.getElementById('login-error');
-            const submitBtn = document.getElementById('login-submit-btn');
-            errorEl.classList.add('hidden');
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'กำลังเข้าสู่ระบบ...';
-
-            auth.signInWithEmailAndPassword(email, password)
-                .catch((err) => {
-                    const messages = {
-                        'auth/invalid-email': 'อีเมลไม่ถูกต้อง',
-                        'auth/user-disabled': 'บัญชีนี้ถูกระงับการใช้งาน',
-                        'auth/user-not-found': 'ไม่พบบัญชีผู้ใช้นี้ในระบบ',
-                        'auth/wrong-password': 'รหัสผ่านไม่ถูกต้อง',
-                        'auth/invalid-credential': 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
-                        'auth/too-many-requests': 'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่'
-                    };
-                    errorEl.innerText = messages[err.code] || ('เข้าสู่ระบบไม่สำเร็จ: ' + err.message);
-                    errorEl.classList.remove('hidden');
-                })
-                .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'เข้าสู่ระบบ';
-                });
-        }
-
-        function handleLogout() {
-            if (confirm('ต้องการออกจากระบบใช่หรือไม่?')) auth.signOut();
-        }
-
-        function startInventoryListener() {
-            if (unsubscribeInventoryListener) return; 
-            unsubscribeInventoryListener = cardsCollection.onSnapshot((snapshot) => {
-                inventory = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateUI();
-            }, (err) => {
-                console.error('Firestore error:', err);
-                alert('ซิงค์ข้อมูลล้มเหลว: ' + err.message);
-            });
-        }
-
-        function stopInventoryListener() {
-            if (unsubscribeInventoryListener) {
-                unsubscribeInventoryListener();
-                unsubscribeInventoryListener = null;
-            }
-            inventory = [];
-        }
-
-        function startSettingsListener() {
-            if (unsubscribeSettingsListener) return;
-            unsubscribeSettingsListener = settingsDoc.onSnapshot((doc) => {
-                ownerCapital = (doc.exists && doc.data().ownerCapital) || 0;
-                updateUI();
-            }, (err) => console.error('Settings listener error:', err));
-        }
-
-        function stopSettingsListener() {
-            if (unsubscribeSettingsListener) {
-                unsubscribeSettingsListener();
-                unsubscribeSettingsListener = null;
-            }
-            ownerCapital = 0;
-        }
-
-        async function editOwnerCapital() {
-            const input = prompt('กรอกยอดเงินลงทุนสะสมของ Owner ทั้งหมด (บาท):', ownerCapital || 0);
-            if (input === null) return;
-            const val = parseFloat(input);
-            if (isNaN(val) || val < 0) return alert('กรุณากรอกตัวเลขที่ถูกต้อง');
-            try {
-                await settingsDoc.set({ ownerCapital: val }, { merge: true });
-            } catch (err) {
-                alert('บันทึกไม่สำเร็จ: ' + err.message);
-            }
-        }
-
-        // ================== รายจ่ายอื่นๆ (ค่าส่ง/แพ็ค/โฆษณา ฯลฯ) ==================
-        function startExpensesListener() {
-            if (unsubscribeExpensesListener) return;
-            unsubscribeExpensesListener = expensesCollection.onSnapshot((snapshot) => {
-                expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateUI();
-            }, (err) => console.error('Expenses listener error:', err));
-        }
-
-        function stopExpensesListener() {
-            if (unsubscribeExpensesListener) {
-                unsubscribeExpensesListener();
-                unsubscribeExpensesListener = null;
-            }
-            expenses = [];
-        }
-
-        function openExpenseModal() {
-            document.getElementById('expense-desc').value = '';
-            document.getElementById('expense-amount').value = '';
-            document.getElementById('expense-category').value = 'shipping';
-            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-            renderExpenseHistory();
-            document.getElementById('expense-modal').classList.remove('hidden');
-        }
-
-        function closeExpenseModal() {
-            document.getElementById('expense-modal').classList.add('hidden');
-        }
-
-        async function addExpense() {
-            const desc = document.getElementById('expense-desc').value.trim();
-            const amount = parseFloat(document.getElementById('expense-amount').value);
-            const category = document.getElementById('expense-category').value;
-            const date = document.getElementById('expense-date').value;
-
-            if (!desc) return alert('กรุณากรอกรายละเอียดรายจ่าย');
-            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
-
-            try {
-                await expensesCollection.add({
-                    description: desc,
-                    amount: amount,
-                    category: category,
-                    date: date ? new Date(date).toISOString() : new Date().toISOString(),
-                    addedBy: (auth.currentUser && auth.currentUser.email) || null
-                });
-                document.getElementById('expense-desc').value = '';
-                document.getElementById('expense-amount').value = '';
-            } catch (err) {
-                alert('บันทึกรายจ่ายไม่สำเร็จ: ' + err.message);
-            }
-        }
-
-        async function deleteExpense(id) {
-            if (confirm('ต้องการลบรายจ่ายนี้ใช่หรือไม่?')) {
-                try { await expensesCollection.doc(id).delete(); } catch (err) { alert('ลบไม่สำเร็จ: ' + err.message); }
-            }
-        }
-
-        const expenseCategoryLabels = { shipping: '📦 ค่าส่ง', packing: '🧾 ค่าแพ็ค', ads: '📢 ค่าโฆษณา', other: '💼 อื่นๆ' };
-
-        function renderExpenseHistory() {
-            const list = document.getElementById('expense-history-list');
-            const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
-            if (sorted.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายจ่ายที่บันทึกไว้</p>`;
-                return;
-            }
-            list.innerHTML = sorted.map(e => `
-                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
-                    <div>
-                        <p class="text-sm font-medium text-slate-700">${expenseCategoryLabels[e.category] || e.category} · ${e.description}</p>
-                        <p class="text-[10px] text-slate-400">${new Date(e.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-semibold text-red-500">-${formatMoney(e.amount)}</span>
-                        <button onclick="deleteExpense('${e.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ================== ถอนกำไร (Owner Draw) ==================
-        // หมายเหตุ: เงินถอนของ Owner ไม่ใช่รายจ่ายของธุรกิจ (ไม่หักกำไรสะสม) แค่ย้ายเงินสดออกจากธุรกิจไปกระเป๋า Owner
-        function startDrawsListener() {
-            if (unsubscribeDrawsListener) return;
-            unsubscribeDrawsListener = drawsCollection.onSnapshot((snapshot) => {
-                draws = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                updateUI();
-            }, (err) => console.error('Draws listener error:', err));
-        }
-
-        function stopDrawsListener() {
-            if (unsubscribeDrawsListener) {
-                unsubscribeDrawsListener();
-                unsubscribeDrawsListener = null;
-            }
-            draws = [];
-        }
-
-        function openDrawModal() {
-            document.getElementById('draw-note').value = '';
-            document.getElementById('draw-amount').value = '';
-            document.getElementById('draw-date').value = new Date().toISOString().split('T')[0];
-            renderDrawHistory();
-            document.getElementById('draw-modal').classList.remove('hidden');
-        }
-
-        function closeDrawModal() {
-            document.getElementById('draw-modal').classList.add('hidden');
-        }
-
-        async function addDraw() {
-            const amount = parseFloat(document.getElementById('draw-amount').value);
-            const note = document.getElementById('draw-note').value.trim();
-            const date = document.getElementById('draw-date').value;
-
-            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
-
-            try {
-                await drawsCollection.add({
-                    amount: amount,
-                    note: note || null,
-                    date: date ? new Date(date).toISOString() : new Date().toISOString(),
-                    withdrawnBy: (auth.currentUser && auth.currentUser.email) || null
-                });
-                document.getElementById('draw-note').value = '';
-                document.getElementById('draw-amount').value = '';
-            } catch (err) {
-                alert('บันทึกการถอนไม่สำเร็จ: ' + err.message);
-            }
-        }
-
-        async function deleteDraw(id) {
-            if (confirm('ต้องการลบรายการถอนนี้ใช่หรือไม่?')) {
-                try { await drawsCollection.doc(id).delete(); } catch (err) { alert('ลบไม่สำเร็จ: ' + err.message); }
-            }
-        }
-
-        function renderDrawHistory() {
-            const list = document.getElementById('draw-history-list');
-            const sorted = [...draws].sort((a, b) => new Date(b.date) - new Date(a.date));
-            if (sorted.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการถอนกำไร</p>`;
-                return;
-            }
-            list.innerHTML = sorted.map(d => `
-                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
-                    <div>
-                        <p class="text-sm font-medium text-slate-700">💸 ${d.note || 'ถอนกำไร'}</p>
-                        <p class="text-[10px] text-slate-400">${new Date(d.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}${d.withdrawnBy ? ' · ' + d.withdrawnBy : ''}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-semibold text-amber-600">-${formatMoney(d.amount)}</span>
-                        <button onclick="deleteDraw('${d.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        auth.onAuthStateChanged((user) => {
-            const loginScreen = document.getElementById('login-screen');
-            const appShell = document.getElementById('app-shell');
-            if (user) {
-                loginScreen.classList.add('hidden');
-                appShell.classList.remove('hidden');
-                document.getElementById('current-user-email').innerText = user.email || '';
-                document.getElementById('login-form').reset();
-                startInventoryListener();
-                startSettingsListener();
-                startExpensesListener();
-                startDrawsListener();
-            } else {
-                stopInventoryListener();
-                stopSettingsListener();
-                stopExpensesListener();
-                stopDrawsListener();
-                appShell.classList.add('hidden');
-                loginScreen.classList.remove('hidden');
-            }
-        });
-
         // ================== Data & Options ==================
         const gameIcons = { onepiece: '🏴‍☠️', pokemon: '🗲', lorcana: '✨', talingchan: '⚔️', dragonball: '🐉', naruto: '🥷' };
         const rarityData = {
@@ -965,7 +659,7 @@
             const select = document.getElementById('edit-rarity');
             select.innerHTML = rarityData[game].map(r => `<option value="${r.val}">${r.label}</option>`).join('');
             if(presetRarity) select.value = presetRarity;
-            else select.value = rarityData[game][0].val; // set first value as default to avoid empty selections
+            else select.value = rarityData[game][0].val; 
         }
 
         function formatMoney(amount) { return '฿' + amount.toLocaleString('en-US'); }
@@ -988,22 +682,154 @@
         function changeMonthFilter() { currentMonthView = document.getElementById('month-filter').value; updateUI(); }
         function handleSearch() { currentSearchQuery = document.getElementById('search-sales').value.toLowerCase().trim(); updateUI(); }
 
-        async function clearAllData() {
+        // ================== จัดการข้อมูลเงินลงทุนและค่าใช้จ่าย (Local) ==================
+        function editOwnerCapital() {
+            const input = prompt('กรอกยอดเงินลงทุนสะสมทั้งหมด (บาท):', ownerCapital || 0);
+            if (input === null) return;
+            const val = parseFloat(input);
+            if (isNaN(val) || val < 0) return alert('กรุณากรอกตัวเลขที่ถูกต้อง');
+            ownerCapital = val;
+            saveLocalData();
+        }
+
+        function openExpenseModal() {
+            document.getElementById('expense-desc').value = '';
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-category').value = 'shipping';
+            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+            renderExpenseHistory();
+            document.getElementById('expense-modal').classList.remove('hidden');
+        }
+
+        function closeExpenseModal() { document.getElementById('expense-modal').classList.add('hidden'); }
+
+        function addExpense() {
+            const desc = document.getElementById('expense-desc').value.trim();
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const category = document.getElementById('expense-category').value;
+            const date = document.getElementById('expense-date').value;
+
+            if (!desc) return alert('กรุณากรอกรายละเอียดรายจ่าย');
+            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
+
+            expenses.push({
+                id: generateId(),
+                description: desc,
+                amount: amount,
+                category: category,
+                date: date ? new Date(date).toISOString() : new Date().toISOString()
+            });
+            document.getElementById('expense-desc').value = '';
+            document.getElementById('expense-amount').value = '';
+            saveLocalData();
+            renderExpenseHistory();
+        }
+
+        function deleteExpense(id) {
+            if (confirm('ต้องการลบรายจ่ายนี้ใช่หรือไม่?')) {
+                expenses = expenses.filter(e => e.id !== id);
+                saveLocalData();
+                renderExpenseHistory();
+            }
+        }
+
+        const expenseCategoryLabels = { shipping: '📦 ค่าส่ง', packing: '🧾 ค่าแพ็ค', ads: '📢 ค่าโฆษณา', other: '💼 อื่นๆ' };
+        function renderExpenseHistory() {
+            const list = document.getElementById('expense-history-list');
+            const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sorted.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายจ่ายที่บันทึกไว้</p>`;
+                return;
+            }
+            list.innerHTML = sorted.map(e => `
+                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">${expenseCategoryLabels[e.category] || e.category} · ${e.description}</p>
+                        <p class="text-[10px] text-slate-400">${new Date(e.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-red-500">-${formatMoney(e.amount)}</span>
+                        <button onclick="deleteExpense('${e.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openDrawModal() {
+            document.getElementById('draw-note').value = '';
+            document.getElementById('draw-amount').value = '';
+            document.getElementById('draw-date').value = new Date().toISOString().split('T')[0];
+            renderDrawHistory();
+            document.getElementById('draw-modal').classList.remove('hidden');
+        }
+
+        function closeDrawModal() { document.getElementById('draw-modal').classList.add('hidden'); }
+
+        function addDraw() {
+            const amount = parseFloat(document.getElementById('draw-amount').value);
+            const note = document.getElementById('draw-note').value.trim();
+            const date = document.getElementById('draw-date').value;
+
+            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
+
+            draws.push({
+                id: generateId(),
+                amount: amount,
+                note: note || null,
+                date: date ? new Date(date).toISOString() : new Date().toISOString()
+            });
+            document.getElementById('draw-note').value = '';
+            document.getElementById('draw-amount').value = '';
+            saveLocalData();
+            renderDrawHistory();
+        }
+
+        function deleteDraw(id) {
+            if (confirm('ต้องการลบรายการถอนนี้ใช่หรือไม่?')) {
+                draws = draws.filter(d => d.id !== id);
+                saveLocalData();
+                renderDrawHistory();
+            }
+        }
+
+        function renderDrawHistory() {
+            const list = document.getElementById('draw-history-list');
+            const sorted = [...draws].sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sorted.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการถอนกำไร</p>`;
+                return;
+            }
+            list.innerHTML = sorted.map(d => `
+                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">💸 ${d.note || 'ถอนกำไร'}</p>
+                        <p class="text-[10px] text-slate-400">${new Date(d.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-amber-600">-${formatMoney(d.amount)}</span>
+                        <button onclick="deleteDraw('${d.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+
+        // ================== จัดการข้อมูลการ์ด (Local) ==================
+        function clearAllData() {
             if(inventory.length === 0) return alert('ไม่มีข้อมูลให้ลบครับ');
-            if(confirm('⚠️ คำเตือน: ต้องการ "ลบข้อมูลทั้งหมด"?\n(แนะนำให้กด Export เก็บไว้ก่อน)')) {
-                if(confirm('ยืนยันลบข้อมูลทั้งหมด ข้อมูลของทั้งทีมจะหายไปและกู้คืนไม่ได้?')) {
-                    try {
-                        const snapshot = await cardsCollection.get();
-                        const batch = db.batch();
-                        snapshot.docs.forEach(doc => batch.delete(doc.ref));
-                        await batch.commit();
-                        alert('ลบข้อมูลเรียบร้อยแล้ว');
-                    } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+            if(confirm('⚠️ คำเตือน: ต้องการ "ลบข้อมูลทั้งหมดในเครื่องนี้"?\n(แนะนำให้กด Export เก็บไว้ก่อน)')) {
+                if(confirm('ยืนยันลบข้อมูลทั้งหมด ข้อมูลจะหายไปและกู้คืนไม่ได้?')) {
+                    inventory = [];
+                    expenses = [];
+                    draws = [];
+                    ownerCapital = 0;
+                    saveLocalData();
+                    alert('ลบข้อมูลเรียบร้อยแล้ว');
                 }
             }
         }
 
-        async function addCard(e) {
+        function addCard(e) {
             e.preventDefault();
             const submitBtn = document.querySelector('#add-form button[type="submit"]');
             try {
@@ -1025,19 +851,14 @@
                     status: 'stock',
                     isCollection: document.getElementById('card-collection').checked,
                     sellPrice: null,
-                    dateAdded: new Date().toISOString(),
-                    addedBy: (auth.currentUser && auth.currentUser.email) || null
+                    dateAdded: new Date().toISOString()
                 };
 
-                if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'กำลังบันทึก...'; }
-
-                const batch = db.batch();
                 for (let i = 0; i < quantity; i++) {
-                    const newRef = cardsCollection.doc();
-                    batch.set(newRef, base);
+                    inventory.push({ id: generateId(), ...base });
                 }
-                await batch.commit();
 
+                saveLocalData();
                 document.getElementById('add-form').reset();
                 resetImagePicker('card');
                 updateRarityOptions();
@@ -1045,19 +866,17 @@
                 switchTab('inventory');
             } catch (err) {
                 console.error(err); alert('เกิดข้อผิดพลาด: ' + err.message);
-            } finally {
-                if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Add to Inventory'; }
             }
         }
 
-        async function toggleCollection(id) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-            const goingToLock = !item.isCollection;
+        function toggleCollection(id) {
+            const index = inventory.findIndex(i => i.id === id);
+            if (index === -1) return;
+            const goingToLock = !inventory[index].isCollection;
             const msg = goingToLock ? 'ต้องการ "ล็อค" เก็บเข้าคอลเลกชัน (ป้องกันการขาย)?' : 'ต้องการ "ปลดล็อค" เพื่อนำไปขาย?';
             if (confirm(msg)) {
-                try { await cardsCollection.doc(id).update({ isCollection: goingToLock }); } 
-                catch (err) { alert('อัปเดตไม่สำเร็จ: ' + err.message); }
+                inventory[index].isCollection = goingToLock;
+                saveLocalData();
             }
         }
 
@@ -1074,7 +893,7 @@
 
         function closeSellModal() { document.getElementById('sell-modal').classList.add('hidden'); document.getElementById('sell-price').value = ''; }
 
-        async function confirmSell() {
+        function confirmSell() {
             const id = document.getElementById('sell-item-id').value;
             const price = parseFloat(document.getElementById('sell-price').value);
             const inputDate = document.getElementById('sell-date').value;
@@ -1084,21 +903,20 @@
 
             if(isNaN(price) || price <= 0) return alert('กรุณาระบุราคาขายที่ถูกต้อง');
 
-            const dateSold = inputDate ? new Date(inputDate).toISOString() : new Date().toISOString();
-            try {
-                await cardsCollection.doc(id).update({
-                    status: 'sold',
-                    sellPrice: price,
-                    fees: inputFees,
-                    channel: inputChannel,
-                    dateSold: dateSold,
-                    customer: inputCustomer || null,
-                    dateReserved: null,
-                    soldBy: (auth.currentUser && auth.currentUser.email) || null
-                });
-                currentMonthView = getYYYYMM(dateSold);
+            const index = inventory.findIndex(i => i.id === id);
+            if(index > -1) {
+                inventory[index].status = 'sold';
+                inventory[index].sellPrice = price;
+                inventory[index].fees = inputFees;
+                inventory[index].channel = inputChannel;
+                inventory[index].dateSold = inputDate ? new Date(inputDate).toISOString() : new Date().toISOString();
+                inventory[index].customer = inputCustomer || null;
+                inventory[index].dateReserved = null;
+                
+                currentMonthView = getYYYYMM(inventory[index].dateSold);
+                saveLocalData();
                 closeSellModal(); switchTab('dashboard');
-            } catch (err) { alert('บันทึกไม่สำเร็จ: ' + err.message); }
+            }
         }
 
         function openReserveModal(id) {
@@ -1111,33 +929,38 @@
         }
         function closeReserveModal() { document.getElementById('reserve-modal').classList.add('hidden'); }
 
-        async function confirmReserve() {
+        function confirmReserve() {
             const id = document.getElementById('reserve-item-id').value;
             const customer = document.getElementById('reserve-customer').value.trim();
             const date = document.getElementById('reserve-date').value;
             if (!customer) return alert('กรุณาระบุชื่อลูกค้า');
 
-            try {
-                await cardsCollection.doc(id).update({
-                    status: 'reserved',
-                    customer: customer,
-                    dateReserved: date ? new Date(date).toISOString() : new Date().toISOString()
-                });
+            const index = inventory.findIndex(i => i.id === id);
+            if(index > -1) {
+                inventory[index].status = 'reserved';
+                inventory[index].customer = customer;
+                inventory[index].dateReserved = date ? new Date(date).toISOString() : new Date().toISOString();
+                saveLocalData();
                 closeReserveModal();
-            } catch (err) { alert('บันทึกไม่สำเร็จ: ' + err.message); }
-        }
-
-        async function cancelReservation(id) {
-            if(confirm('ยกเลิกการจอง และย้ายกลับไป In Stock?')) {
-                try { await cardsCollection.doc(id).update({ status: 'stock', customer: null, dateReserved: null }); } 
-                catch (err) { alert('ยกเลิกไม่สำเร็จ: ' + err.message); }
             }
         }
 
-        async function deleteItem(id) {
+        function cancelReservation(id) {
+            if(confirm('ยกเลิกการจอง และย้ายกลับไป In Stock?')) {
+                const index = inventory.findIndex(i => i.id === id);
+                if(index > -1) {
+                    inventory[index].status = 'stock';
+                    inventory[index].customer = null;
+                    inventory[index].dateReserved = null;
+                    saveLocalData();
+                }
+            }
+        }
+
+        function deleteItem(id) {
             if(confirm('ต้องการ "ลบ" รายการนี้ออกจากระบบ?')) {
-                try { await cardsCollection.doc(id).delete(); } 
-                catch (err) { alert('ลบไม่สำเร็จ: ' + err.message); }
+                inventory = inventory.filter(i => i.id !== id);
+                saveLocalData();
             }
         }
 
@@ -1157,8 +980,6 @@
             }
             
             document.getElementById('edit-game').value = item.game || 'onepiece';
-            
-            // Wait for dropdown to update, then select rarity
             updateEditRarityOptions(item.rarity);
             
             document.getElementById('edit-name').value = item.name;
@@ -1179,36 +1000,30 @@
         
         function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
         
-        async function saveEdit() {
+        function saveEdit() {
             const id = document.getElementById('edit-item-id').value;
-            const original = inventory.find(i => i.id === id);
-            if (!original) return closeEditModal();
+            const index = inventory.findIndex(i => i.id === id);
+            if (index === -1) return closeEditModal();
 
-            const updateData = {
-                imageUrl: document.getElementById('edit-image').value,
-                game: document.getElementById('edit-game').value,
-                name: document.getElementById('edit-name').value,
-                rarity: document.getElementById('edit-rarity').value,
-                condition: document.getElementById('edit-condition').value,
-                cost: parseFloat(document.getElementById('edit-cost').value)
-            };
+            inventory[index].imageUrl = document.getElementById('edit-image').value;
+            inventory[index].game = document.getElementById('edit-game').value;
+            inventory[index].name = document.getElementById('edit-name').value;
+            inventory[index].rarity = document.getElementById('edit-rarity').value;
+            inventory[index].condition = document.getElementById('edit-condition').value;
+            inventory[index].cost = parseFloat(document.getElementById('edit-cost').value);
 
-            if (original.status === 'sold') {
-                updateData.sellPrice = parseFloat(document.getElementById('edit-sell-price').value);
-                updateData.fees = parseFloat(document.getElementById('edit-sell-fees').value) || 0;
-                updateData.channel = document.getElementById('edit-sell-channel').value || null;
+            if (inventory[index].status === 'sold') {
+                inventory[index].sellPrice = parseFloat(document.getElementById('edit-sell-price').value);
+                inventory[index].fees = parseFloat(document.getElementById('edit-sell-fees').value) || 0;
+                inventory[index].channel = document.getElementById('edit-sell-channel').value || null;
                 const editDate = document.getElementById('edit-sell-date').value;
-                if (editDate) updateData.dateSold = new Date(editDate).toISOString();
-                const editCus = document.getElementById('edit-sell-customer').value.trim();
-                updateData.customer = editCus || null;
-
-                currentMonthView = getYYYYMM(updateData.dateSold || original.dateSold);
+                if (editDate) inventory[index].dateSold = new Date(editDate).toISOString();
+                inventory[index].customer = document.getElementById('edit-sell-customer').value.trim() || null;
+                currentMonthView = getYYYYMM(inventory[index].dateSold);
             }
 
-            try {
-                await cardsCollection.doc(id).update(updateData);
-                closeEditModal();
-            } catch (err) { alert('บันทึกไม่สำเร็จ: ' + err.message); }
+            saveLocalData();
+            closeEditModal();
         }
 
         function exportToExcel() {
@@ -1227,14 +1042,14 @@
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Card Inventory");
-            XLSX.writeFile(workbook, `CardVault_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.writeFile(workbook, `CardVault_Local_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function importFromExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = function(e) {
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
@@ -1253,7 +1068,7 @@
                         const status = statusInput === 'Sold' ? 'sold' : (statusInput === 'Reserved' ? 'reserved' : 'stock');
                         
                         return {
-                            id: row['ID'] ? String(row['ID']) : undefined,
+                            id: row['ID'] ? String(row['ID']) : generateId(),
                             imageUrl: row['Image URL'] || '', game: gameKey,
                             name: (row['Card Name'] || 'Unknown Card').toString(),
                             rarity: (row['Rarity'] || 'C').toString(),
@@ -1269,28 +1084,10 @@
                         };
                     });
 
-                    if(confirm(`พบ ${imported.length} รายการ ต้องการเซฟทับข้อมูลเดิมหรือไม่?`)) {
-                        try {
-                            const existingSnap = await cardsCollection.get();
-                            let batch = db.batch();
-                            let opCount = 0;
-                            for (const doc of existingSnap.docs) {
-                                batch.delete(doc.ref);
-                                opCount++;
-                                if (opCount >= 450) { await batch.commit(); batch = db.batch(); opCount = 0; }
-                            }
-                            if (opCount > 0) { await batch.commit(); batch = db.batch(); opCount = 0; }
-
-                            for (const row of imported) {
-                                const { id, ...data } = row;
-                                const ref = id ? cardsCollection.doc(String(id)) : cardsCollection.doc();
-                                batch.set(ref, data);
-                                opCount++;
-                                if (opCount >= 450) { await batch.commit(); batch = db.batch(); opCount = 0; }
-                            }
-                            if (opCount > 0) await batch.commit();
-                            alert('นำเข้าสำเร็จ!');
-                        } catch (err) { alert('เกิดข้อผิดพลาด: ' + err.message); }
+                    if(confirm(`พบ ${imported.length} รายการ ต้องการเอาไปเพิ่มในเครื่องนี้ไหม?\n\nกด OK = เขียนทับข้อมูลเดิมทั้งหมด\nกด Cancel = ล้มเลิก`)) {
+                        inventory = imported;
+                        saveLocalData();
+                        alert('นำเข้าสำเร็จ!');
                     }
                 } catch (err) { alert('ไฟล์ไม่ถูกต้อง'); }
             };
@@ -1342,7 +1139,7 @@
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false, animation: { duration: 800 },
-                        layout: { padding: { left: 10, right: 10 } }, // ดันขอบซ้ายขวาไม่ให้ตัวเลขตกขอบ
+                        layout: { padding: { left: 10, right: 10 } },
                         plugins: {
                             legend: { display: false },
                             title: { display: true, text: titleText, font: { size: 11, weight: '600' }, color: '#94a3b8', padding: { bottom: 15 } },
@@ -1350,17 +1147,7 @@
                         },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
-                            y: { 
-                                grid: { color: '#f1f5f9', drawBorder: false }, 
-                                ticks: { 
-                                    font: { size: 10 }, 
-                                    color: '#94a3b8', 
-                                    padding: 10, // เพิ่มระยะห่างระหว่างตัวเลขกับเส้นกราฟ
-                                    callback: (val) => '฿' + val.toLocaleString() } }
-                        },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
-                            y: { grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { size: 10 }, color: '#94a3b8', callback: (val) => '฿' + val } }
+                            y: { grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { size: 10 }, color: '#94a3b8', padding: 10, callback: (val) => '฿' + val.toLocaleString() } }
                         }
                     }
                 });
@@ -1430,15 +1217,14 @@
                 const stockValueTotal = stockItems.reduce((sum, item) => sum + item.cost, 0) + reservedItems.reduce((sum, item) => sum + item.cost, 0);
                 document.getElementById('stock-value').innerText = `Value: ${formatMoney(stockValueTotal)}`;
 
-                // ================== ภาพรวมการเงิน (All Time — ไม่ขึ้นกับ month filter) ==================
+                // ================== ภาพรวมการเงิน ==================
                 const allTimeRevenue = allSoldItems.reduce((sum, item) => sum + item.sellPrice, 0);
                 const allTimeFees = allSoldItems.reduce((sum, item) => sum + (item.fees || 0), 0);
                 const allTimeCostSold = allSoldItems.reduce((sum, item) => sum + item.cost, 0);
-                const grossProfit = allTimeRevenue - allTimeFees - allTimeCostSold; // กำไรขั้นต้น (ยังไม่หักค่าใช้จ่ายอื่น)
+                const grossProfit = allTimeRevenue - allTimeFees - allTimeCostSold; 
                 const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-                const accumulatedProfit = grossProfit - totalExpenses; // กำไรสุทธิสะสม (หักรายจ่ายอื่นแล้ว, ไม่หักเงินถอน Owner)
+                const accumulatedProfit = grossProfit - totalExpenses; 
                 const totalDraws = draws.reduce((sum, d) => sum + d.amount, 0);
-                // เงินสด = เงินลงทุน Owner - เงินที่ถอนไปแล้ว + กำไรสุทธิสะสม - มูลค่าสต็อกที่ยังไม่ได้ขาย
                 const cashOnHand = ownerCapital - totalDraws + accumulatedProfit - stockValueTotal;
 
                 const accProfitEl = document.getElementById('accumulated-profit');
@@ -1466,7 +1252,6 @@
                 const drawTotalEl = document.getElementById('draw-total-badge');
                 if (drawTotalEl) drawTotalEl.innerText = formatMoney(totalDraws);
 
-                // ================== เงินลงทุน Owner + ROI + Turnover ==================
                 document.getElementById('owner-capital').innerText = formatMoney(ownerCapital);
 
                 const roiEl = document.getElementById('roi-value');
@@ -1489,7 +1274,6 @@
                     turnoverEl.innerText = '-';
                 }
 
-                // ================== สัดส่วนทรัพย์สิน (Cash / Inventory / Collection) ==================
                 const collectionValue = inventory.filter(i => i.isCollection).reduce((sum, item) => sum + item.cost, 0);
                 const sellableInventoryValue = Math.max(0, stockValueTotal - collectionValue);
                 const cashForChart = Math.max(0, cashOnHand);
@@ -1661,7 +1445,10 @@
         }
 
         populateStaticDropdowns();
-        updateRarityOptions(); updateUI();
+        updateRarityOptions(); 
+        
+        // โหลดข้อมูลเริ่มต้นเมื่อเปิดแอป
+        updateUI();
 
         (function openTabFromShortcut() {
             const params = new URLSearchParams(window.location.search);
