@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CardVault Pro (Local)</title>
+    <title>CardVault Pro (Offline Mode)</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CardVault">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
-    <meta name="description" content="แอปจัดการคลังการ์ดเทรดดิ้งการ์ด บันทึกต้นทุน ราคาขาย และกำไร ใช้งานได้แม้ออฟไลน์">
+    <meta name="description" content="แอปจัดการคลังการ์ดเทรดดิ้งการ์ด บันทึกต้นทุน ราคาขาย และกำไร ใช้งานออฟไลน์ 100%">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
@@ -49,9 +49,6 @@
     <div id="app-shell" class="block">
 
     <header class="bg-white/70 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-100/60 px-6 py-5 pt-12 transition-all">
-        <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-slate-400 font-medium truncate max-w-[70%]">🔒 Local Workspace (Offline)</span>
-        </div>
         <h1 class="text-[22px] font-semibold tracking-tight text-center text-slate-900" id="header-title">Overview</h1>
     </header>
 
@@ -63,10 +60,6 @@
                 <button id="app-banner-action" class="bg-white text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition-transform cursor-pointer"></button>
                 <button id="app-banner-dismiss" onclick="dismissAppBanner()" class="text-slate-400 hover:text-white text-lg leading-none px-1 cursor-pointer">×</button>
             </div>
-        </div>
-
-        <div id="offline-pill" class="hidden bg-amber-50/80 backdrop-blur-sm text-amber-700 border border-amber-100/60 rounded-2xl px-4 py-2.5 mb-5 text-xs font-medium text-center">
-            📡 ออฟไลน์อยู่ — ข้อมูลยังใช้งานและบันทึกในเครื่องได้
         </div>
 
         <section id="tab-dashboard" class="tab-content active">
@@ -106,28 +99,13 @@
             </h3>
 
             <div class="relative mb-5">
-                <span class="absolute left-4 top-3 text-slate-400">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <span class="absolute left-4 top-3 text-slate-400 pointer-events-none">
+                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </span>
                 <input type="search" id="search-sales" oninput="handleSearch()" placeholder="ค้นหาการ์ด, ลูกค้า, เกม..." class="w-full bg-white shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 rounded-2xl pl-11 pr-5 py-3 text-sm focus:ring-2 focus:ring-slate-900 outline-none appearance-none transition-all">
             </div>
 
             <div id="sold-list" class="space-y-3"></div>
-
-            <div class="mt-10 border-t border-slate-100 pt-8 pb-4">
-                <h3 class="text-[10px] font-bold text-slate-300 mb-5 uppercase tracking-widest text-center">Data Management</h3>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <button onclick="exportToExcel()" class="bg-white shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 text-slate-600 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-slate-50">↑ Export Excel</button>
-                    <label class="bg-white shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 text-slate-600 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-slate-50">
-                        ↓ Import Excel <input type="file" id="import-file" class="hidden" accept=".xlsx, .xls" onchange="importFromExcel(event)">
-                    </label>
-                </div>
-                <button onclick="clearAllData()" 
-        class="w-full bg-red-50/50 text-red-500 text-xs font-semibold py-3.5 rounded-2xl 
-               active:scale-95 transition-all border border-red-100/50 
-               flex items-center justify-center gap-2 cursor-pointer relative z-20 hover:bg-red-50">
-    ⚠️ Clear All Data</button>
-            </div>
         </section>
 
         <section id="tab-finance" class="tab-content">
@@ -213,6 +191,14 @@
                 <span class="text-sm font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full" id="stock-value">Value: ฿0</span>
             </h3>
             <p id="reserved-count-line" class="text-xs font-medium text-amber-600 mb-5 hidden bg-amber-50 inline-block px-3 py-1 rounded-lg">🕒 จองแล้ว <span id="reserved-count">0</span> รายการ</p>
+
+            <div class="relative mb-5">
+                <span class="absolute left-4 top-3 text-slate-400 pointer-events-none">
+                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="search" id="search-stock" oninput="handleStockSearch()" placeholder="ค้นหาการ์ด, เกม, ลูกค้าที่จอง..." class="w-full bg-white shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 rounded-2xl pl-11 pr-5 py-3 text-sm focus:ring-2 focus:ring-slate-900 outline-none appearance-none transition-all">
+            </div>
+
             <div id="inventory-list" class="space-y-4 mt-2"></div>
         </section>
 
@@ -229,7 +215,7 @@
                                 <svg id="card-image-placeholder-icon" class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             </div>
                             <span id="card-image-placeholder" class="text-xs font-medium text-slate-500">แตะเพื่ออัปโหลดรูปภาพ</span>
-                            <span id="card-image-uploading" class="hidden text-xs font-medium text-slate-400">กำลังอัปโหลด...</span>
+                            <span id="card-image-uploading" class="hidden text-xs font-medium text-slate-400">กำลังประมวลผล...</span>
                         </label>
                     </div>
                     <div class="mb-5">
@@ -245,7 +231,9 @@
                     </div>
                     <div class="mb-5">
                         <label class="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Card Name / Code</label>
-                        <input type="text" id="card-name" placeholder="e.g. OP01-024, Elsa..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-slate-900 outline-none transition-all focus:bg-white" required>
+                        <input type="text" id="card-name" list="card-name-suggestions" oninput="checkLastCost()" placeholder="e.g. OP01-024, Elsa..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-sm focus:ring-2 focus:ring-slate-900 outline-none transition-all focus:bg-white" required>
+                        <datalist id="card-name-suggestions"></datalist>
+                        <p id="last-cost-hint" onclick="applyLastCost()" class="hidden mt-2 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl cursor-pointer active:scale-[0.98] transition-transform"></p>
                     </div>
                     <div class="mb-5">
                         <label class="block text-[11px] font-bold text-slate-400 tracking-wider mb-2.5 uppercase">Rarity</label>
@@ -279,6 +267,24 @@
                 </form>
             </div>
         </section>
+
+        <section id="tab-settings" class="tab-content">
+
+            <div class="bg-white rounded-[2rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100/60 mb-5">
+                <h3 class="text-[10px] font-bold text-slate-300 mb-5 uppercase tracking-widest text-center">Data Management</h3>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <button onclick="exportToExcel()" class="bg-white shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 text-slate-600 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-slate-50">↑ Export Excel</button>
+                    <label class="bg-white shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 text-slate-600 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-slate-50">
+                        ↓ Import Excel <input type="file" id="import-file" class="hidden" accept=".xlsx, .xls" onchange="importFromExcel(event)">
+                    </label>
+                </div>
+                <button onclick="clearAllData()"
+        class="w-full bg-red-50/50 text-red-500 text-xs font-semibold py-3.5 rounded-2xl
+               active:scale-95 transition-all border border-red-100/50
+               flex items-center justify-center gap-2 cursor-pointer relative z-20 hover:bg-red-50">
+    ⚠️ Clear All Data</button>
+            </div>
+        </section>
     </main>
 
     <nav class="fixed bottom-0 z-40 w-full bg-white/70 backdrop-blur-xl border-t border-slate-100/60 safe-bottom">
@@ -300,6 +306,10 @@
                 <svg class="w-6 h-6 mb-1 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                 <span class="text-[10px] font-semibold tracking-wide pointer-events-none">Stock</span>
             </button>
+            <button onclick="switchTab('settings')" class="nav-btn p-3 text-slate-400 flex flex-col items-center cursor-pointer transition-colors" data-tab="settings">
+                <svg class="w-6 h-6 mb-1 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[10px] font-semibold tracking-wide pointer-events-none">ตั้งค่า</span>
+            </button>
         </div>
     </nav>
 
@@ -318,7 +328,7 @@
                         <svg id="edit-image-placeholder-icon" class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     </div>
                     <span id="edit-image-placeholder" class="text-xs font-medium text-slate-500">แตะเปลี่ยนรูปภาพ</span>
-                    <span id="edit-image-uploading" class="hidden text-xs font-medium text-slate-400">กำลังอัปโหลด...</span>
+                    <span id="edit-image-uploading" class="hidden text-xs font-medium text-slate-400">กำลังประมวลผล...</span>
                 </label>
             </div>
             
@@ -535,50 +545,82 @@
     </div><!-- /#app-shell -->
 
     <script>
-        // ================== ระบบ LocalStorage (บันทึกในเครื่อง 100%) ==================
-        let inventory = JSON.parse(localStorage.getItem('cv_local_inventory')) || [];
-        let expenses = JSON.parse(localStorage.getItem('cv_local_expenses')) || [];
-        let draws = JSON.parse(localStorage.getItem('cv_local_draws')) || [];
-        let ownerCapital = parseFloat(localStorage.getItem('cv_local_capital')) || 0;
+        // ================== Local Data State ==================
+        let inventory = [];
+        let expenses = [];
+        let draws = [];
+        let ownerCapital = 0;
+        
         let profitChartInstance = null;
         let currentMonthView = null;
         let currentSearchQuery = "";
+        let currentStockSearchQuery = "";
 
-        // ฟังก์ชันอัปเดตข้อมูลลงเครื่อง
-        function saveLocalData() {
-            localStorage.setItem('cv_local_inventory', JSON.stringify(inventory));
-            localStorage.setItem('cv_local_expenses', JSON.stringify(expenses));
-            localStorage.setItem('cv_local_draws', JSON.stringify(draws));
-            localStorage.setItem('cv_local_capital', ownerCapital.toString());
+        // ================== LocalStorage Handlers ==================
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function loadFromLocal() {
+            try {
+                inventory = JSON.parse(localStorage.getItem('cv_inventory')) || [];
+                expenses = JSON.parse(localStorage.getItem('cv_expenses')) || [];
+                draws = JSON.parse(localStorage.getItem('cv_draws')) || [];
+                ownerCapital = parseFloat(localStorage.getItem('cv_capital')) || 0;
+            } catch(e) {
+                console.error("Failed to load local data", e);
+            }
             updateUI();
         }
 
-        // ฟังก์ชันสร้าง ID อัตโนมัติแทนของ Firebase
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substring(2);
+        function saveInventory() { localStorage.setItem('cv_inventory', JSON.stringify(inventory)); updateUI(); }
+        function saveExpenses() { localStorage.setItem('cv_expenses', JSON.stringify(expenses)); updateUI(); renderExpenseHistory(); }
+        function saveDraws() { localStorage.setItem('cv_draws', JSON.stringify(draws)); updateUI(); renderDrawHistory(); }
+        function saveCapital() { localStorage.setItem('cv_capital', ownerCapital.toString()); updateUI(); }
+
+        async function editOwnerCapital() {
+            const input = prompt('กรอกยอดเงินลงทุนสะสมของ Owner ทั้งหมด (บาท):', ownerCapital || 0);
+            if (input === null) return;
+            const val = parseFloat(input);
+            if (isNaN(val) || val < 0) return alert('กรุณากรอกตัวเลขที่ถูกต้อง');
+            ownerCapital = val;
+            saveCapital();
         }
 
-        // ================== Cloudinary (อัปโหลดรูปภาพ) ==================
-        const CLOUDINARY_CLOUD_NAME = 'apleyypc';
-        const CLOUDINARY_UPLOAD_PRESET = 'cardvault_unsigned';
+        // ================== Base64 Image Compression ==================
+        function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = event => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        // จำกัดขนาดรูปภาพเพื่อไม่ให้เกินโควต้า LocalStorage (5MB)
+                        const MAX_WIDTH = 600;
+                        const MAX_HEIGHT = 600;
+                        let width = img.width;
+                        let height = img.height;
 
-        async function uploadToCloudinary(file) {
-            if (!navigator.onLine) {
-                throw new Error('ต้องใช้อินเทอร์เน็ตในการอัปโหลดรูปภาพ');
-            }
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                method: 'POST',
-                body: formData
+                        if (width > height) {
+                            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        } else {
+                            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // แปลงเป็น JPEG แบบบีบอัด 70%
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                    img.onerror = error => reject(error);
+                };
+                reader.onerror = error => reject(error);
             });
-            if (!res.ok) {
-                const errBody = await res.json().catch(() => null);
-                throw new Error((errBody && errBody.error && errBody.error.message) || 'อัปโหลดรูปไม่สำเร็จ');
-            }
-            const data = await res.json();
-            return data.secure_url;
         }
 
         async function handleImageSelect(event, prefix) {
@@ -591,21 +633,21 @@
             const placeholderText = document.getElementById(`${prefix}-image-placeholder`);
             const uploadingText = document.getElementById(`${prefix}-image-uploading`);
 
-            placeholderText.classList.add('hidden');
-            uploadingText.classList.remove('hidden');
+            if (placeholderText) placeholderText.classList.add('hidden');
+            if (uploadingText) uploadingText.classList.remove('hidden');
 
             try {
-                const url = await uploadToCloudinary(file);
-                hiddenInput.value = url;
-                preview.src = url;
+                const dataUrl = await compressImage(file);
+                hiddenInput.value = dataUrl;
+                preview.src = dataUrl;
                 preview.classList.remove('hidden');
-                placeholderIcon.classList.add('hidden');
+                if (placeholderIcon) placeholderIcon.classList.add('hidden');
             } catch (err) {
-                console.error('อัปโหลดรูปไม่สำเร็จ:', err);
-                alert('อัปโหลดรูปไม่สำเร็จ: ' + err.message);
-                placeholderText.classList.remove('hidden');
+                console.error('ประมวลผลรูปภาพไม่สำเร็จ:', err);
+                alert('ประมวลผลรูปภาพไม่สำเร็จ: ' + err.message);
+                if (placeholderText) placeholderText.classList.remove('hidden');
             } finally {
-                uploadingText.classList.add('hidden');
+                if (uploadingText) uploadingText.classList.add('hidden');
                 event.target.value = ''; 
             }
         }
@@ -617,6 +659,125 @@
             preview.classList.add('hidden');
             document.getElementById(`${prefix}-image-placeholder-icon`).classList.remove('hidden');
             document.getElementById(`${prefix}-image-placeholder`).classList.remove('hidden');
+        }
+
+        // ================== รายจ่ายอื่นๆ ==================
+        function openExpenseModal() {
+            document.getElementById('expense-desc').value = '';
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-category').value = 'shipping';
+            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+            renderExpenseHistory();
+            document.getElementById('expense-modal').classList.remove('hidden');
+        }
+        function closeExpenseModal() { document.getElementById('expense-modal').classList.add('hidden'); }
+
+        function addExpense() {
+            const desc = document.getElementById('expense-desc').value.trim();
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const category = document.getElementById('expense-category').value;
+            const date = document.getElementById('expense-date').value;
+
+            if (!desc) return alert('กรุณากรอกรายละเอียดรายจ่าย');
+            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
+
+            expenses.push({
+                id: generateId(),
+                description: desc,
+                amount: amount,
+                category: category,
+                date: date ? new Date(date).toISOString() : new Date().toISOString()
+            });
+            saveExpenses();
+            
+            document.getElementById('expense-desc').value = '';
+            document.getElementById('expense-amount').value = '';
+        }
+
+        function deleteExpense(id) {
+            if (confirm('ต้องการลบรายจ่ายนี้ใช่หรือไม่?')) {
+                expenses = expenses.filter(e => e.id !== id);
+                saveExpenses();
+            }
+        }
+
+        const expenseCategoryLabels = { shipping: '📦 ค่าส่ง', packing: '🧾 ค่าแพ็ค', ads: '📢 ค่าโฆษณา', other: '💼 อื่นๆ' };
+        function renderExpenseHistory() {
+            const list = document.getElementById('expense-history-list');
+            const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sorted.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายจ่ายที่บันทึกไว้</p>`;
+                return;
+            }
+            list.innerHTML = sorted.map(e => `
+                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">${expenseCategoryLabels[e.category] || e.category} · ${e.description}</p>
+                        <p class="text-[10px] text-slate-400">${new Date(e.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-red-500">-${formatMoney(e.amount)}</span>
+                        <button onclick="deleteExpense('${e.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ================== ถอนกำไร (Owner Draw) ==================
+        function openDrawModal() {
+            document.getElementById('draw-note').value = '';
+            document.getElementById('draw-amount').value = '';
+            document.getElementById('draw-date').value = new Date().toISOString().split('T')[0];
+            renderDrawHistory();
+            document.getElementById('draw-modal').classList.remove('hidden');
+        }
+        function closeDrawModal() { document.getElementById('draw-modal').classList.add('hidden'); }
+
+        function addDraw() {
+            const amount = parseFloat(document.getElementById('draw-amount').value);
+            const note = document.getElementById('draw-note').value.trim();
+            const date = document.getElementById('draw-date').value;
+
+            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
+
+            draws.push({
+                id: generateId(),
+                amount: amount,
+                note: note || null,
+                date: date ? new Date(date).toISOString() : new Date().toISOString()
+            });
+            saveDraws();
+            
+            document.getElementById('draw-note').value = '';
+            document.getElementById('draw-amount').value = '';
+        }
+
+        function deleteDraw(id) {
+            if (confirm('ต้องการลบรายการถอนนี้ใช่หรือไม่?')) {
+                draws = draws.filter(d => d.id !== id);
+                saveDraws();
+            }
+        }
+
+        function renderDrawHistory() {
+            const list = document.getElementById('draw-history-list');
+            const sorted = [...draws].sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sorted.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการถอนกำไร</p>`;
+                return;
+            }
+            list.innerHTML = sorted.map(d => `
+                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">💸 ${d.note || 'ถอนกำไร'}</p>
+                        <p class="text-[10px] text-slate-400">${new Date(d.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-semibold text-amber-600">-${formatMoney(d.amount)}</span>
+                        <button onclick="deleteDraw('${d.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         // ================== Data & Options ==================
@@ -679,7 +840,7 @@
             document.querySelectorAll('.nav-btn').forEach(el => { el.classList.remove('text-slate-900'); el.classList.add('text-slate-400'); });
             document.getElementById(`tab-${tabName}`).classList.add('active');
             
-            const titles = { 'dashboard': 'Overview', 'finance': 'การเงิน', 'add': 'Add New Card', 'inventory': 'Inventory' };
+            const titles = { 'dashboard': 'Overview', 'finance': 'การเงิน', 'add': 'Add New Card', 'inventory': 'Inventory', 'settings': 'ตั้งค่า' };
             document.getElementById('header-title').innerText = titles[tabName];
             
             if(tabName !== 'add') {
@@ -690,213 +851,109 @@
 
         function changeMonthFilter() { currentMonthView = document.getElementById('month-filter').value; updateUI(); }
         function handleSearch() { currentSearchQuery = document.getElementById('search-sales').value.toLowerCase().trim(); updateUI(); }
+        function handleStockSearch() { currentStockSearchQuery = document.getElementById('search-stock').value.toLowerCase().trim(); updateUI(); }
 
-        // ================== ฟังก์ชันจัดการรายจ่ายและถอนเงิน (Local) ==================
-        function editOwnerCapital() {
-            const input = prompt('กรอกยอดเงินลงทุนสะสมของ Owner ทั้งหมด (บาท):', ownerCapital || 0);
-            if (input === null) return;
-            const val = parseFloat(input);
-            if (isNaN(val) || val < 0) return alert('กรุณากรอกตัวเลขที่ถูกต้อง');
-            ownerCapital = val;
-            saveLocalData();
-        }
-
-        function openExpenseModal() {
-            document.getElementById('expense-desc').value = '';
-            document.getElementById('expense-amount').value = '';
-            document.getElementById('expense-category').value = 'shipping';
-            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-            renderExpenseHistory();
-            document.getElementById('expense-modal').classList.remove('hidden');
-        }
-
-        function closeExpenseModal() {
-            document.getElementById('expense-modal').classList.add('hidden');
-        }
-
-        function addExpense() {
-            const desc = document.getElementById('expense-desc').value.trim();
-            const amount = parseFloat(document.getElementById('expense-amount').value);
-            const category = document.getElementById('expense-category').value;
-            const date = document.getElementById('expense-date').value;
-
-            if (!desc) return alert('กรุณากรอกรายละเอียดรายจ่าย');
-            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
-
-            expenses.push({
-                id: generateId(),
-                description: desc,
-                amount: amount,
-                category: category,
-                date: date ? new Date(date).toISOString() : new Date().toISOString()
-            });
-            
-            document.getElementById('expense-desc').value = '';
-            document.getElementById('expense-amount').value = '';
-            saveLocalData();
-            renderExpenseHistory();
-        }
-
-        function deleteExpense(id) {
-            if (confirm('ต้องการลบรายจ่ายนี้ใช่หรือไม่?')) {
-                expenses = expenses.filter(e => e.id !== id);
-                saveLocalData();
-                renderExpenseHistory();
-            }
-        }
-
-        const expenseCategoryLabels = { shipping: '📦 ค่าส่ง', packing: '🧾 ค่าแพ็ค', ads: '📢 ค่าโฆษณา', other: '💼 อื่นๆ' };
-
-        function renderExpenseHistory() {
-            const list = document.getElementById('expense-history-list');
-            const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
-            if (sorted.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายจ่ายที่บันทึกไว้</p>`;
-                return;
-            }
-            list.innerHTML = sorted.map(e => `
-                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
-                    <div>
-                        <p class="text-sm font-medium text-slate-700">${expenseCategoryLabels[e.category] || e.category} · ${e.description}</p>
-                        <p class="text-[10px] text-slate-400">${new Date(e.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-semibold text-red-500">-${formatMoney(e.amount)}</span>
-                        <button onclick="deleteExpense('${e.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function openDrawModal() {
-            document.getElementById('draw-note').value = '';
-            document.getElementById('draw-amount').value = '';
-            document.getElementById('draw-date').value = new Date().toISOString().split('T')[0];
-            renderDrawHistory();
-            document.getElementById('draw-modal').classList.remove('hidden');
-        }
-
-        function closeDrawModal() {
-            document.getElementById('draw-modal').classList.add('hidden');
-        }
-
-        function addDraw() {
-            const amount = parseFloat(document.getElementById('draw-amount').value);
-            const note = document.getElementById('draw-note').value.trim();
-            const date = document.getElementById('draw-date').value;
-
-            if (isNaN(amount) || amount <= 0) return alert('กรุณากรอกจำนวนเงินที่ถูกต้อง');
-
-            draws.push({
-                id: generateId(),
-                amount: amount,
-                note: note || null,
-                date: date ? new Date(date).toISOString() : new Date().toISOString()
-            });
-
-            document.getElementById('draw-note').value = '';
-            document.getElementById('draw-amount').value = '';
-            saveLocalData();
-            renderDrawHistory();
-        }
-
-        function deleteDraw(id) {
-            if (confirm('ต้องการลบรายการถอนนี้ใช่หรือไม่?')) {
-                draws = draws.filter(d => d.id !== id);
-                saveLocalData();
-                renderDrawHistory();
-            }
-        }
-
-        function renderDrawHistory() {
-            const list = document.getElementById('draw-history-list');
-            const sorted = [...draws].sort((a, b) => new Date(b.date) - new Date(a.date));
-            if (sorted.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีรายการถอนกำไร</p>`;
-                return;
-            }
-            list.innerHTML = sorted.map(d => `
-                <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
-                    <div>
-                        <p class="text-sm font-medium text-slate-700">💸 ${d.note || 'ถอนกำไร'}</p>
-                        <p class="text-[10px] text-slate-400">${new Date(d.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-semibold text-amber-600">-${formatMoney(d.amount)}</span>
-                        <button onclick="deleteDraw('${d.id}')" class="text-slate-300 hover:text-red-500 text-lg leading-none cursor-pointer">×</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ================== ฟังก์ชันจัดการสินค้า (Local) ==================
         function clearAllData() {
-            if(inventory.length === 0 && expenses.length === 0 && draws.length === 0) return alert('ไม่มีข้อมูลให้ลบครับ');
-            if(confirm('⚠️ คำเตือน: ต้องการ "ลบข้อมูลทั้งหมดในเครื่องนี้"?\n(แนะนำให้กด Export เก็บไว้ก่อน)')) {
-                if(confirm('ยืนยันลบข้อมูลทั้งหมด ข้อมูลจะหายไปและกู้คืนไม่ได้?')) {
+            if(inventory.length === 0 && expenses.length === 0 && draws.length === 0 && ownerCapital === 0) return alert('ไม่มีข้อมูลให้ลบครับ');
+            if(confirm('⚠️ คำเตือน: ต้องการ "ลบข้อมูลทั้งหมด"?\n(แนะนำให้กด Export เก็บไว้ก่อน)')) {
+                if(confirm('ยืนยันลบข้อมูลทั้งหมด ข้อมูลจะหายไปจากเครื่องของคุณและกู้คืนไม่ได้?')) {
                     inventory = [];
                     expenses = [];
                     draws = [];
                     ownerCapital = 0;
-                    saveLocalData();
+                    localStorage.removeItem('cv_inventory');
+                    localStorage.removeItem('cv_expenses');
+                    localStorage.removeItem('cv_draws');
+                    localStorage.removeItem('cv_capital');
+                    updateUI();
                     alert('ลบข้อมูลเรียบร้อยแล้ว');
                 }
+            }
+        }
+
+        // ================== Autocomplete ชื่อการ์ด + จำต้นทุนล่าสุด ==================
+        let lastCostSuggestion = null;
+
+        function updateNameSuggestions() {
+            const datalist = document.getElementById('card-name-suggestions');
+            if (!datalist) return;
+            const uniqueNames = [...new Set(inventory.map(i => i.name).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'th'));
+            datalist.innerHTML = uniqueNames.map(n => `<option value="${n.replace(/"/g, '&quot;')}">`).join('');
+        }
+
+        function checkLastCost() {
+            const typedName = document.getElementById('card-name').value.trim().toLowerCase();
+            const hintEl = document.getElementById('last-cost-hint');
+            if (!typedName) { hintEl.classList.add('hidden'); lastCostSuggestion = null; return; }
+
+            const matches = inventory
+                .filter(i => (i.name || '').trim().toLowerCase() === typedName)
+                .sort((a, b) => new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0));
+
+            if (matches.length > 0) {
+                lastCostSuggestion = matches[0].cost;
+                hintEl.innerText = `💡 ครั้งก่อนซื้อการ์ดนี้ที่ ฿${lastCostSuggestion.toLocaleString()} · แตะเพื่อใช้ราคานี้`;
+                hintEl.classList.remove('hidden');
+            } else {
+                lastCostSuggestion = null;
+                hintEl.classList.add('hidden');
+            }
+        }
+
+        function applyLastCost() {
+            if (lastCostSuggestion !== null) {
+                document.getElementById('card-cost').value = lastCostSuggestion;
+                document.getElementById('card-cost').focus();
             }
         }
 
         function addCard(e) {
             e.preventDefault();
             const submitBtn = document.querySelector('#add-form button[type="submit"]');
-            try {
-                const name = document.getElementById('card-name').value.trim();
-                const costRaw = document.getElementById('card-cost').value;
-                const cost = parseFloat(costRaw);
-                const quantity = Math.max(1, parseInt(document.getElementById('card-quantity').value) || 1);
+            
+            const name = document.getElementById('card-name').value.trim();
+            const costRaw = document.getElementById('card-cost').value;
+            const cost = parseFloat(costRaw);
+            const quantity = Math.max(1, parseInt(document.getElementById('card-quantity').value) || 1);
 
-                if (!name) { alert('กรุณากรอกชื่อการ์ด / โค้ด'); document.getElementById('card-name').focus(); return; }
-                if (costRaw === '' || isNaN(cost) || cost < 0) { alert('กรุณากรอกต้นทุนที่ถูกต้อง'); document.getElementById('card-cost').focus(); return; }
+            if (!name) { alert('กรุณากรอกชื่อการ์ด / โค้ด'); document.getElementById('card-name').focus(); return; }
+            if (costRaw === '' || isNaN(cost) || cost < 0) { alert('กรุณากรอกต้นทุนที่ถูกต้อง'); document.getElementById('card-cost').focus(); return; }
 
-                const base = {
-                    imageUrl: document.getElementById('card-image').value,
-                    game: document.getElementById('card-game').value,
-                    name: name,
-                    rarity: document.getElementById('card-rarity').value,
-                    condition: document.getElementById('card-condition').value,
-                    cost: cost,
-                    status: 'stock',
-                    isCollection: document.getElementById('card-collection').checked,
-                    sellPrice: null,
-                    dateAdded: new Date().toISOString()
-                };
+            const base = {
+                imageUrl: document.getElementById('card-image').value,
+                game: document.getElementById('card-game').value,
+                name: name,
+                rarity: document.getElementById('card-rarity').value,
+                condition: document.getElementById('card-condition').value,
+                cost: cost,
+                status: 'stock',
+                isCollection: document.getElementById('card-collection').checked,
+                sellPrice: null,
+                dateAdded: new Date().toISOString()
+            };
 
-                if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'กำลังบันทึก...'; }
-
-                for (let i = 0; i < quantity; i++) {
-                    inventory.push({ id: generateId(), ...base });
-                }
-
-                saveLocalData();
-                document.getElementById('add-form').reset();
-                resetImagePicker('card');
-                updateRarityOptions();
-                document.getElementById('card-quantity').value = 1;
-                switchTab('inventory');
-            } catch (err) {
-                console.error(err); alert('เกิดข้อผิดพลาด: ' + err.message);
-            } finally {
-                if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Add to Inventory'; }
+            for (let i = 0; i < quantity; i++) {
+                inventory.push({ ...base, id: generateId() });
             }
+            saveInventory();
+
+            document.getElementById('add-form').reset();
+            resetImagePicker('card');
+            document.getElementById('last-cost-hint').classList.add('hidden');
+            lastCostSuggestion = null;
+            updateRarityOptions();
+            document.getElementById('card-quantity').value = 1;
+            switchTab('inventory');
         }
 
         function toggleCollection(id) {
-            const index = inventory.findIndex(i => i.id === id);
-            if (index === -1) return;
-            
-            const goingToLock = !inventory[index].isCollection;
+            const item = inventory.find(i => i.id === id);
+            if (!item) return;
+            const goingToLock = !item.isCollection;
             const msg = goingToLock ? 'ต้องการ "ล็อค" เก็บเข้าคอลเลกชัน (ป้องกันการขาย)?' : 'ต้องการ "ปลดล็อค" เพื่อนำไปขาย?';
             if (confirm(msg)) {
-                inventory[index].isCollection = goingToLock;
-                saveLocalData();
+                item.isCollection = goingToLock;
+                saveInventory();
             }
         }
 
@@ -923,18 +980,20 @@
 
             if(isNaN(price) || price <= 0) return alert('กรุณาระบุราคาขายที่ถูกต้อง');
 
-            const index = inventory.findIndex(i => i.id === id);
-            if(index > -1) {
-                inventory[index].status = 'sold';
-                inventory[index].sellPrice = price;
-                inventory[index].fees = inputFees;
-                inventory[index].channel = inputChannel;
-                inventory[index].dateSold = inputDate ? new Date(inputDate).toISOString() : new Date().toISOString();
-                inventory[index].customer = inputCustomer || null;
-                inventory[index].dateReserved = null;
-
-                currentMonthView = getYYYYMM(inventory[index].dateSold);
-                saveLocalData();
+            const dateSold = inputDate ? new Date(inputDate).toISOString() : new Date().toISOString();
+            
+            const item = inventory.find(i => i.id === id);
+            if(item) {
+                item.status = 'sold';
+                item.sellPrice = price;
+                item.fees = inputFees;
+                item.channel = inputChannel;
+                item.dateSold = dateSold;
+                item.customer = inputCustomer || null;
+                item.dateReserved = null;
+                saveInventory();
+                
+                currentMonthView = getYYYYMM(dateSold);
                 closeSellModal(); switchTab('dashboard');
             }
         }
@@ -955,24 +1014,24 @@
             const date = document.getElementById('reserve-date').value;
             if (!customer) return alert('กรุณาระบุชื่อลูกค้า');
 
-            const index = inventory.findIndex(i => i.id === id);
-            if(index > -1) {
-                inventory[index].status = 'reserved';
-                inventory[index].customer = customer;
-                inventory[index].dateReserved = date ? new Date(date).toISOString() : new Date().toISOString();
-                saveLocalData();
+            const item = inventory.find(i => i.id === id);
+            if(item) {
+                item.status = 'reserved';
+                item.customer = customer;
+                item.dateReserved = date ? new Date(date).toISOString() : new Date().toISOString();
+                saveInventory();
                 closeReserveModal();
             }
         }
 
         function cancelReservation(id) {
             if(confirm('ยกเลิกการจอง และย้ายกลับไป In Stock?')) {
-                const index = inventory.findIndex(i => i.id === id);
-                if(index > -1) {
-                    inventory[index].status = 'stock';
-                    inventory[index].customer = null;
-                    inventory[index].dateReserved = null;
-                    saveLocalData();
+                const item = inventory.find(i => i.id === id);
+                if(item) {
+                    item.status = 'stock';
+                    item.customer = null;
+                    item.dateReserved = null;
+                    saveInventory();
                 }
             }
         }
@@ -980,7 +1039,7 @@
         function deleteItem(id) {
             if(confirm('ต้องการ "ลบ" รายการนี้ออกจากระบบ?')) {
                 inventory = inventory.filter(i => i.id !== id);
-                saveLocalData();
+                saveInventory();
             }
         }
 
@@ -1022,28 +1081,29 @@
         
         function saveEdit() {
             const id = document.getElementById('edit-item-id').value;
-            const index = inventory.findIndex(i => i.id === id);
-            if (index === -1) return closeEditModal();
+            const original = inventory.find(i => i.id === id);
+            if (!original) return closeEditModal();
 
-            inventory[index].imageUrl = document.getElementById('edit-image').value;
-            inventory[index].game = document.getElementById('edit-game').value;
-            inventory[index].name = document.getElementById('edit-name').value;
-            inventory[index].rarity = document.getElementById('edit-rarity').value;
-            inventory[index].condition = document.getElementById('edit-condition').value;
-            inventory[index].cost = parseFloat(document.getElementById('edit-cost').value);
+            original.imageUrl = document.getElementById('edit-image').value;
+            original.game = document.getElementById('edit-game').value;
+            original.name = document.getElementById('edit-name').value;
+            original.rarity = document.getElementById('edit-rarity').value;
+            original.condition = document.getElementById('edit-condition').value;
+            original.cost = parseFloat(document.getElementById('edit-cost').value);
 
-            if (inventory[index].status === 'sold') {
-                inventory[index].sellPrice = parseFloat(document.getElementById('edit-sell-price').value);
-                inventory[index].fees = parseFloat(document.getElementById('edit-sell-fees').value) || 0;
-                inventory[index].channel = document.getElementById('edit-sell-channel').value || null;
+            if (original.status === 'sold') {
+                original.sellPrice = parseFloat(document.getElementById('edit-sell-price').value);
+                original.fees = parseFloat(document.getElementById('edit-sell-fees').value) || 0;
+                original.channel = document.getElementById('edit-sell-channel').value || null;
                 const editDate = document.getElementById('edit-sell-date').value;
-                if (editDate) inventory[index].dateSold = new Date(editDate).toISOString();
-                inventory[index].customer = document.getElementById('edit-sell-customer').value.trim() || null;
+                if (editDate) original.dateSold = new Date(editDate).toISOString();
+                const editCus = document.getElementById('edit-sell-customer').value.trim();
+                original.customer = editCus || null;
 
-                currentMonthView = getYYYYMM(inventory[index].dateSold);
+                currentMonthView = getYYYYMM(original.dateSold);
             }
 
-            saveLocalData();
+            saveInventory();
             closeEditModal();
         }
 
@@ -1063,7 +1123,7 @@
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Card Inventory");
-            XLSX.writeFile(workbook, `CardVault_Local_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
+            XLSX.writeFile(workbook, `CardVault_Offline_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function importFromExcel(event) {
@@ -1105,12 +1165,14 @@
                         };
                     });
 
-                    if(confirm(`พบ ${imported.length} รายการ ต้องการเอาไปเพิ่มในเครื่องนี้ไหม?\n\nกด OK = เขียนทับข้อมูลเดิมทั้งหมด\nกด Cancel = ล้มเลิก`)) {
+                    if(confirm(`พบ ${imported.length} รายการ \nกด 'ตกลง' เพื่อเซฟทับข้อมูลเดิม \nกด 'ยกเลิก' เพื่อนำเข้าแบบเพิ่มเติมจากของเดิม`)) {
                         inventory = imported;
-                        saveLocalData();
-                        alert('นำเข้าสำเร็จ!');
+                    } else {
+                        inventory = inventory.concat(imported);
                     }
-                } catch (err) { alert('ไฟล์ไม่ถูกต้อง'); }
+                    saveInventory();
+                    alert('นำเข้าสำเร็จ!');
+                } catch (err) { alert('ไฟล์ไม่ถูกต้อง: ' + err.message); }
             };
             reader.readAsArrayBuffer(file);
             event.target.value = '';
@@ -1160,7 +1222,7 @@
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false, animation: { duration: 800 },
-                        layout: { padding: { left: 10, right: 10 } }, // ดันขอบซ้ายขวาไม่ให้ตัวเลขตกขอบ
+                        layout: { padding: { left: 10, right: 10 } },
                         plugins: {
                             legend: { display: false },
                             title: { display: true, text: titleText, font: { size: 11, weight: '600' }, color: '#94a3b8', padding: { bottom: 15 } },
@@ -1173,12 +1235,8 @@
                                 ticks: { 
                                     font: { size: 10 }, 
                                     color: '#94a3b8', 
-                                    padding: 10, // เพิ่มระยะห่างระหว่างตัวเลขกับเส้นกราฟ
+                                    padding: 10,
                                     callback: (val) => '฿' + val.toLocaleString() } }
-                        },
-                        scales: {
-                            x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
-                            y: { grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { size: 10 }, color: '#94a3b8', callback: (val) => '฿' + val } }
                         }
                     }
                 });
@@ -1213,6 +1271,7 @@
 
         function updateUI() {
             try {
+                updateNameSuggestions();
                 const stockItems = inventory.filter(i => i.status === 'stock');
                 const reservedItems = inventory.filter(i => i.status === 'reserved');
                 const allSoldItems = inventory.filter(i => i.status === 'sold');
@@ -1248,15 +1307,14 @@
                 const stockValueTotal = stockItems.reduce((sum, item) => sum + item.cost, 0) + reservedItems.reduce((sum, item) => sum + item.cost, 0);
                 document.getElementById('stock-value').innerText = `Value: ${formatMoney(stockValueTotal)}`;
 
-                // ================== ภาพรวมการเงิน (All Time — ไม่ขึ้นกับ month filter) ==================
+                // ================== ภาพรวมการเงิน ==================
                 const allTimeRevenue = allSoldItems.reduce((sum, item) => sum + item.sellPrice, 0);
                 const allTimeFees = allSoldItems.reduce((sum, item) => sum + (item.fees || 0), 0);
                 const allTimeCostSold = allSoldItems.reduce((sum, item) => sum + item.cost, 0);
-                const grossProfit = allTimeRevenue - allTimeFees - allTimeCostSold; // กำไรขั้นต้น (ยังไม่หักค่าใช้จ่ายอื่น)
+                const grossProfit = allTimeRevenue - allTimeFees - allTimeCostSold; 
                 const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-                const accumulatedProfit = grossProfit - totalExpenses; // กำไรสุทธิสะสม (หักรายจ่ายอื่นแล้ว, ไม่หักเงินถอน Owner)
+                const accumulatedProfit = grossProfit - totalExpenses; 
                 const totalDraws = draws.reduce((sum, d) => sum + d.amount, 0);
-                // เงินสด = เงินลงทุน Owner - เงินที่ถอนไปแล้ว + กำไรสุทธิสะสม - มูลค่าสต็อกที่ยังไม่ได้ขาย
                 const cashOnHand = ownerCapital - totalDraws + accumulatedProfit - stockValueTotal;
 
                 const accProfitEl = document.getElementById('accumulated-profit');
@@ -1284,7 +1342,7 @@
                 const drawTotalEl = document.getElementById('draw-total-badge');
                 if (drawTotalEl) drawTotalEl.innerText = formatMoney(totalDraws);
 
-                // ================== เงินลงทุน Owner + ROI + Turnover ==================
+                // ================== เงินลงทุน Owner ==================
                 document.getElementById('owner-capital').innerText = formatMoney(ownerCapital);
 
                 const roiEl = document.getElementById('roi-value');
@@ -1307,7 +1365,7 @@
                     turnoverEl.innerText = '-';
                 }
 
-                // ================== สัดส่วนทรัพย์สิน (Cash / Inventory / Collection) ==================
+                // ================== สัดส่วนทรัพย์สิน ==================
                 const collectionValue = inventory.filter(i => i.isCollection).reduce((sum, item) => sum + item.cost, 0);
                 const sellableInventoryValue = Math.max(0, stockValueTotal - collectionValue);
                 const cashForChart = Math.max(0, cashOnHand);
@@ -1467,27 +1525,41 @@
                         <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </div>
                     <h4 class="text-sm font-bold text-slate-700 mb-1">ไม่พบรายการ</h4>
-                    <p class="text-xs text-slate-400">ลองเปลี่ยนคำค้นหาหรือเดือนดูอีกครั้ง</p>
+                    <p class="text-xs text-slate-400">ลองเปลี่ยนคำค้นหาดูอีกครั้ง</p>
                 </div>`;
 
                 const availableForDisplay = [...reservedItems.map(i => ({ item: i, kind: 'reserved' })), ...stockItems.map(i => ({ item: i, kind: 'stock' }))];
-                
-                document.getElementById('inventory-list').innerHTML = availableForDisplay.length ? availableForDisplay.map(x => createCardHTML(x.item, x.kind)).join('') : emptyInventoryHTML;
+
+                let displayAvailable = availableForDisplay;
+                if (currentStockSearchQuery) {
+                    const q = currentStockSearchQuery;
+                    displayAvailable = displayAvailable.filter(x => {
+                        const i = x.item;
+                        return (i.name && i.name.toLowerCase().includes(q)) ||
+                               (i.customer && i.customer.toLowerCase().includes(q)) ||
+                               (gameNames[i.game] && gameNames[i.game].toLowerCase().includes(q)) ||
+                               (i.rarity && i.rarity.toLowerCase().includes(q)) ||
+                               (i.condition && i.condition.toLowerCase().includes(q));
+                    });
+                }
+
+                document.getElementById('inventory-list').innerHTML = displayAvailable.length ? displayAvailable.map(x => createCardHTML(x.item, x.kind)).join('') : (currentStockSearchQuery ? emptySearchHTML : emptyInventoryHTML);
                 document.getElementById('sold-list').innerHTML = listSoldItems.length ? listSoldItems.map(item => createCardHTML(item, 'sold')).join('') : emptySearchHTML;
 
             } catch (error) { console.error(error); }
         }
 
+        // ================== Initialization ==================
         populateStaticDropdowns();
-        updateRarityOptions(); 
+        updateRarityOptions();
         
-        // ================== โหลดข้อมูลเริ่มต้นเมื่อเปิดแอป ==================
-        updateUI();
+        // โหลดข้อมูลจาก LocalStorage ทันทีเมื่อเปิดแอป
+        loadFromLocal();
 
         (function openTabFromShortcut() {
             const params = new URLSearchParams(window.location.search);
             const tab = params.get('tab');
-            if (tab && ['dashboard', 'finance', 'inventory', 'add'].includes(tab)) {
+            if (tab && ['dashboard', 'finance', 'inventory', 'add', 'settings'].includes(tab)) {
                 switchTab(tab); window.history.replaceState({}, '', window.location.pathname);
             }
         })();
@@ -1554,9 +1626,6 @@
             sessionStorage.setItem('installBannerDismissed', '1'); localStorage.setItem('iosInstallHintDismissed', '1'); originalDismiss();
         };
 
-        const offlinePill = document.getElementById('offline-pill');
-        function updateOnlineStatus() { offlinePill.classList.toggle('hidden', navigator.onLine); }
-        window.addEventListener('online', updateOnlineStatus); window.addEventListener('offline', updateOnlineStatus); updateOnlineStatus();
     </script>
 </body>
 </html>
