@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CardVault (Local Edition)</title>
+    <title>CardVault Pro (Local)</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CardVault">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
-    <meta name="description" content="แอปจัดการคลังการ์ดเทรดดิ้งการ์ด (Local Edition) ข้อมูลเก็บในเครื่อง">
-    
-    <!-- เปลี่ยนชื่อไฟล์ Icon ให้ตรงกับที่คุณใช้งานจริง -->
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
+    <meta name="description" content="แอปจัดการคลังการ์ดเทรดดิ้งการ์ด บันทึกต้นทุน ราคาขาย และกำไร ใช้งานได้แม้ออฟไลน์">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="manifest" href="manifest.json">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,8 +23,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-    <!-- ลบ Script ของ Firebase ออกทั้งหมด เพราะเราใช้ LocalStorage -->
 
     <style>
         body { font-family: "Sukhumvit Set", "Prompt", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
@@ -40,6 +37,7 @@
         input[type="search"] { background-image: none; }
         input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0; width: 100%; height: 100%; position: absolute; top: 0; left: 0; cursor: pointer; }
         .date-wrapper { position: relative; }
+        /* Smooth Scrollbar for Modals */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
@@ -47,12 +45,12 @@
 </head>
 <body class="bg-slate-50/50 text-slate-800 pb-32 min-h-[100dvh] antialiased selection:bg-slate-200">
 
-    <!-- ลบหน้าต่าง Login ออก ข้ามมาที่ App Shell เลย -->
+    <!-- ================== ตัวแอปหลัก ================== -->
     <div id="app-shell" class="block">
 
     <header class="bg-white/70 backdrop-blur-xl sticky top-0 z-30 border-b border-slate-100/60 px-6 py-5 pt-12 transition-all">
         <div class="flex items-center justify-between mb-1.5">
-            <span class="text-[10px] text-slate-400 font-medium truncate max-w-[70%]">🔒 Local Workspace (ออฟไลน์)</span>
+            <span class="text-[10px] text-slate-400 font-medium truncate max-w-[70%]">🔒 Local Workspace (Offline)</span>
         </div>
         <h1 class="text-[22px] font-semibold tracking-tight text-center text-slate-900" id="header-title">Overview</h1>
     </header>
@@ -65,6 +63,10 @@
                 <button id="app-banner-action" class="bg-white text-slate-900 text-xs font-semibold px-3 py-1.5 rounded-lg active:scale-95 transition-transform cursor-pointer"></button>
                 <button id="app-banner-dismiss" onclick="dismissAppBanner()" class="text-slate-400 hover:text-white text-lg leading-none px-1 cursor-pointer">×</button>
             </div>
+        </div>
+
+        <div id="offline-pill" class="hidden bg-amber-50/80 backdrop-blur-sm text-amber-700 border border-amber-100/60 rounded-2xl px-4 py-2.5 mb-5 text-xs font-medium text-center">
+            📡 ออฟไลน์อยู่ — ข้อมูลยังใช้งานและบันทึกในเครื่องได้
         </div>
 
         <section id="tab-dashboard" class="tab-content active">
@@ -120,8 +122,11 @@
                         ↓ Import Excel <input type="file" id="import-file" class="hidden" accept=".xlsx, .xls" onchange="importFromExcel(event)">
                     </label>
                 </div>
-                <button onclick="clearAllData()" class="w-full bg-red-50/50 text-red-500 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all border border-red-100/50 flex items-center justify-center gap-2 cursor-pointer relative z-20 hover:bg-red-50">
-                ⚠️ Clear All Data</button>
+                <button onclick="clearAllData()" 
+        class="w-full bg-red-50/50 text-red-500 text-xs font-semibold py-3.5 rounded-2xl 
+               active:scale-95 transition-all border border-red-100/50 
+               flex items-center justify-center gap-2 cursor-pointer relative z-20 hover:bg-red-50">
+    ⚠️ Clear All Data</button>
             </div>
         </section>
 
@@ -144,7 +149,7 @@
                         <p class="font-bold text-sm text-slate-700" id="stock-value-overview">฿0</p>
                     </div>
                 </div>
-                <p class="text-[10px] text-slate-400 text-center mt-4 leading-relaxed">💡 เงินสด + มูลค่าสต็อก = เงินลงทุน Owner − เงินที่ถอนไปแล้ว + กำไรสุทธิสะสม</p>
+                <p class="text-[10px] text-slate-400 text-center mt-4 leading-relaxed">💡 เงินสด + มูลค่าสต็อก = เงินลงทุน Owner − เงินที่ถอนไปแล้ว + กำไรสุทธิสะสม<br>ถ้าเงินสดน้อยกว่าที่คิด แปลว่ากำไรบางส่วน "จม" อยู่ในสต็อก ไม่ได้หายไปไหน</p>
             </div>
 
             <button onclick="openExpenseModal()" class="w-full bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 mb-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
@@ -450,6 +455,7 @@
         </div>
     </div>
 
+    <!-- ================== Expense Modal (รายจ่ายอื่นๆ) ================== -->
     <div id="expense-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-md z-50 flex items-center justify-center p-6">
         <div class="bg-white rounded-[2rem] p-7 w-full max-w-sm shadow-2xl scale-100 transition-transform max-h-[90vh] overflow-y-auto border border-white">
             <h3 class="text-xl font-bold mb-6 text-slate-900">🧾 รายจ่ายอื่นๆ</h3>
@@ -492,6 +498,7 @@
         </div>
     </div>
 
+    <!-- ================== Draw Modal (ถอนกำไร) ================== -->
     <div id="draw-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-md z-50 flex items-center justify-center p-6">
         <div class="bg-white rounded-[2rem] p-7 w-full max-w-sm shadow-2xl scale-100 transition-transform max-h-[90vh] overflow-y-auto border border-white">
             <h3 class="text-xl font-bold mb-1 text-slate-900">💸 ถอนกำไร (Owner Draw)</h3>
@@ -525,7 +532,7 @@
         </div>
     </div>
 
-    </div>
+    </div><!-- /#app-shell -->
 
     <script>
         // ================== ระบบ LocalStorage (บันทึกในเครื่อง 100%) ==================
@@ -537,6 +544,7 @@
         let currentMonthView = null;
         let currentSearchQuery = "";
 
+        // ฟังก์ชันอัปเดตข้อมูลลงเครื่อง
         function saveLocalData() {
             localStorage.setItem('cv_local_inventory', JSON.stringify(inventory));
             localStorage.setItem('cv_local_expenses', JSON.stringify(expenses));
@@ -545,17 +553,18 @@
             updateUI();
         }
 
+        // ฟังก์ชันสร้าง ID อัตโนมัติแทนของ Firebase
         function generateId() {
-            return Date.now().toString() + Math.random().toString(36).substr(2, 5);
+            return Date.now().toString(36) + Math.random().toString(36).substring(2);
         }
 
-        // ================== Cloudinary (อัปโหลดรูปภาพยังต้องต่อเน็ต) ==================
+        // ================== Cloudinary (อัปโหลดรูปภาพ) ==================
         const CLOUDINARY_CLOUD_NAME = 'apleyypc';
         const CLOUDINARY_UPLOAD_PRESET = 'cardvault_unsigned';
 
         async function uploadToCloudinary(file) {
             if (!navigator.onLine) {
-                throw new Error('การอัปโหลดรูปภาพจำเป็นต้องใช้อินเทอร์เน็ตครับ');
+                throw new Error('ต้องใช้อินเทอร์เน็ตในการอัปโหลดรูปภาพ');
             }
             const formData = new FormData();
             formData.append('file', file);
@@ -682,9 +691,9 @@
         function changeMonthFilter() { currentMonthView = document.getElementById('month-filter').value; updateUI(); }
         function handleSearch() { currentSearchQuery = document.getElementById('search-sales').value.toLowerCase().trim(); updateUI(); }
 
-        // ================== จัดการข้อมูลเงินลงทุนและค่าใช้จ่าย (Local) ==================
+        // ================== ฟังก์ชันจัดการรายจ่ายและถอนเงิน (Local) ==================
         function editOwnerCapital() {
-            const input = prompt('กรอกยอดเงินลงทุนสะสมทั้งหมด (บาท):', ownerCapital || 0);
+            const input = prompt('กรอกยอดเงินลงทุนสะสมของ Owner ทั้งหมด (บาท):', ownerCapital || 0);
             if (input === null) return;
             const val = parseFloat(input);
             if (isNaN(val) || val < 0) return alert('กรุณากรอกตัวเลขที่ถูกต้อง');
@@ -701,7 +710,9 @@
             document.getElementById('expense-modal').classList.remove('hidden');
         }
 
-        function closeExpenseModal() { document.getElementById('expense-modal').classList.add('hidden'); }
+        function closeExpenseModal() {
+            document.getElementById('expense-modal').classList.add('hidden');
+        }
 
         function addExpense() {
             const desc = document.getElementById('expense-desc').value.trim();
@@ -719,6 +730,7 @@
                 category: category,
                 date: date ? new Date(date).toISOString() : new Date().toISOString()
             });
+            
             document.getElementById('expense-desc').value = '';
             document.getElementById('expense-amount').value = '';
             saveLocalData();
@@ -734,6 +746,7 @@
         }
 
         const expenseCategoryLabels = { shipping: '📦 ค่าส่ง', packing: '🧾 ค่าแพ็ค', ads: '📢 ค่าโฆษณา', other: '💼 อื่นๆ' };
+
         function renderExpenseHistory() {
             const list = document.getElementById('expense-history-list');
             const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -763,7 +776,9 @@
             document.getElementById('draw-modal').classList.remove('hidden');
         }
 
-        function closeDrawModal() { document.getElementById('draw-modal').classList.add('hidden'); }
+        function closeDrawModal() {
+            document.getElementById('draw-modal').classList.add('hidden');
+        }
 
         function addDraw() {
             const amount = parseFloat(document.getElementById('draw-amount').value);
@@ -778,6 +793,7 @@
                 note: note || null,
                 date: date ? new Date(date).toISOString() : new Date().toISOString()
             });
+
             document.getElementById('draw-note').value = '';
             document.getElementById('draw-amount').value = '';
             saveLocalData();
@@ -813,10 +829,9 @@
             `).join('');
         }
 
-
-        // ================== จัดการข้อมูลการ์ด (Local) ==================
+        // ================== ฟังก์ชันจัดการสินค้า (Local) ==================
         function clearAllData() {
-            if(inventory.length === 0) return alert('ไม่มีข้อมูลให้ลบครับ');
+            if(inventory.length === 0 && expenses.length === 0 && draws.length === 0) return alert('ไม่มีข้อมูลให้ลบครับ');
             if(confirm('⚠️ คำเตือน: ต้องการ "ลบข้อมูลทั้งหมดในเครื่องนี้"?\n(แนะนำให้กด Export เก็บไว้ก่อน)')) {
                 if(confirm('ยืนยันลบข้อมูลทั้งหมด ข้อมูลจะหายไปและกู้คืนไม่ได้?')) {
                     inventory = [];
@@ -854,6 +869,8 @@
                     dateAdded: new Date().toISOString()
                 };
 
+                if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'กำลังบันทึก...'; }
+
                 for (let i = 0; i < quantity; i++) {
                     inventory.push({ id: generateId(), ...base });
                 }
@@ -866,12 +883,15 @@
                 switchTab('inventory');
             } catch (err) {
                 console.error(err); alert('เกิดข้อผิดพลาด: ' + err.message);
+            } finally {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Add to Inventory'; }
             }
         }
 
         function toggleCollection(id) {
             const index = inventory.findIndex(i => i.id === id);
             if (index === -1) return;
+            
             const goingToLock = !inventory[index].isCollection;
             const msg = goingToLock ? 'ต้องการ "ล็อค" เก็บเข้าคอลเลกชัน (ป้องกันการขาย)?' : 'ต้องการ "ปลดล็อค" เพื่อนำไปขาย?';
             if (confirm(msg)) {
@@ -912,7 +932,7 @@
                 inventory[index].dateSold = inputDate ? new Date(inputDate).toISOString() : new Date().toISOString();
                 inventory[index].customer = inputCustomer || null;
                 inventory[index].dateReserved = null;
-                
+
                 currentMonthView = getYYYYMM(inventory[index].dateSold);
                 saveLocalData();
                 closeSellModal(); switchTab('dashboard');
@@ -1019,6 +1039,7 @@
                 const editDate = document.getElementById('edit-sell-date').value;
                 if (editDate) inventory[index].dateSold = new Date(editDate).toISOString();
                 inventory[index].customer = document.getElementById('edit-sell-customer').value.trim() || null;
+
                 currentMonthView = getYYYYMM(inventory[index].dateSold);
             }
 
@@ -1139,7 +1160,7 @@
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false, animation: { duration: 800 },
-                        layout: { padding: { left: 10, right: 10 } },
+                        layout: { padding: { left: 10, right: 10 } }, // ดันขอบซ้ายขวาไม่ให้ตัวเลขตกขอบ
                         plugins: {
                             legend: { display: false },
                             title: { display: true, text: titleText, font: { size: 11, weight: '600' }, color: '#94a3b8', padding: { bottom: 15 } },
@@ -1147,7 +1168,17 @@
                         },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
-                            y: { grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { size: 10 }, color: '#94a3b8', padding: 10, callback: (val) => '฿' + val.toLocaleString() } }
+                            y: { 
+                                grid: { color: '#f1f5f9', drawBorder: false }, 
+                                ticks: { 
+                                    font: { size: 10 }, 
+                                    color: '#94a3b8', 
+                                    padding: 10, // เพิ่มระยะห่างระหว่างตัวเลขกับเส้นกราฟ
+                                    callback: (val) => '฿' + val.toLocaleString() } }
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
+                            y: { grid: { color: '#f1f5f9', drawBorder: false }, ticks: { font: { size: 10 }, color: '#94a3b8', callback: (val) => '฿' + val } }
                         }
                     }
                 });
@@ -1217,14 +1248,15 @@
                 const stockValueTotal = stockItems.reduce((sum, item) => sum + item.cost, 0) + reservedItems.reduce((sum, item) => sum + item.cost, 0);
                 document.getElementById('stock-value').innerText = `Value: ${formatMoney(stockValueTotal)}`;
 
-                // ================== ภาพรวมการเงิน ==================
+                // ================== ภาพรวมการเงิน (All Time — ไม่ขึ้นกับ month filter) ==================
                 const allTimeRevenue = allSoldItems.reduce((sum, item) => sum + item.sellPrice, 0);
                 const allTimeFees = allSoldItems.reduce((sum, item) => sum + (item.fees || 0), 0);
                 const allTimeCostSold = allSoldItems.reduce((sum, item) => sum + item.cost, 0);
-                const grossProfit = allTimeRevenue - allTimeFees - allTimeCostSold; 
+                const grossProfit = allTimeRevenue - allTimeFees - allTimeCostSold; // กำไรขั้นต้น (ยังไม่หักค่าใช้จ่ายอื่น)
                 const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-                const accumulatedProfit = grossProfit - totalExpenses; 
+                const accumulatedProfit = grossProfit - totalExpenses; // กำไรสุทธิสะสม (หักรายจ่ายอื่นแล้ว, ไม่หักเงินถอน Owner)
                 const totalDraws = draws.reduce((sum, d) => sum + d.amount, 0);
+                // เงินสด = เงินลงทุน Owner - เงินที่ถอนไปแล้ว + กำไรสุทธิสะสม - มูลค่าสต็อกที่ยังไม่ได้ขาย
                 const cashOnHand = ownerCapital - totalDraws + accumulatedProfit - stockValueTotal;
 
                 const accProfitEl = document.getElementById('accumulated-profit');
@@ -1252,6 +1284,7 @@
                 const drawTotalEl = document.getElementById('draw-total-badge');
                 if (drawTotalEl) drawTotalEl.innerText = formatMoney(totalDraws);
 
+                // ================== เงินลงทุน Owner + ROI + Turnover ==================
                 document.getElementById('owner-capital').innerText = formatMoney(ownerCapital);
 
                 const roiEl = document.getElementById('roi-value');
@@ -1274,6 +1307,7 @@
                     turnoverEl.innerText = '-';
                 }
 
+                // ================== สัดส่วนทรัพย์สิน (Cash / Inventory / Collection) ==================
                 const collectionValue = inventory.filter(i => i.isCollection).reduce((sum, item) => sum + item.cost, 0);
                 const sellableInventoryValue = Math.max(0, stockValueTotal - collectionValue);
                 const cashForChart = Math.max(0, cashOnHand);
@@ -1447,7 +1481,7 @@
         populateStaticDropdowns();
         updateRarityOptions(); 
         
-        // โหลดข้อมูลเริ่มต้นเมื่อเปิดแอป
+        // ================== โหลดข้อมูลเริ่มต้นเมื่อเปิดแอป ==================
         updateUI();
 
         (function openTabFromShortcut() {
