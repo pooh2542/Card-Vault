@@ -1256,9 +1256,12 @@
             trySaveOrShareBlob(blob, filename);
         }
 
-        // พยายามบันทึก/แชร์ไฟล์ ให้ครอบคลุมทุกสถานการณ์:
-        // 1) ถ้าเบราว์เซอร์รองรับ Web Share API แบบมีไฟล์ (iOS Safari 15+, Android Chrome) -> เด้ง share sheet ให้เลือก "บันทึกใน Files" / AirDrop / LINE ฯลฯ (ใช้ได้แม้เปิดเป็นแอป standalone)
-        // 2) ถ้าไม่รองรับ -> fallback เป็นการดาวน์โหลดแบบปกติผ่านเบราว์เซอร์ (ใช้ได้บนคอมพิวเตอร์และ Android/iOS ที่เปิดผ่าน Safari ปกติ ไม่ใช่โหมด standalone)
+        // พยายามบันทึก/แชร์ไฟล์ ให้ครอบคลุมทุกสถานการณ์ เรียงจากวิธีที่เชื่อถือได้สุดไปหาน้อยสุด:
+        // 1) Web Share API แบบมีไฟล์แนบ (iOS 15+/Android Chrome ที่รองรับ) -> เด้ง share sheet ให้เลือก "บันทึกใน Files"
+        // 2) data: URI + window.open -> ใช้ได้แม้ standalone PWA บน iOS เวอร์ชันเก่าที่ไม่รองรับข้อ 1
+        //    (Safari จะรับช่วงไปเปิด Quick Look ให้กด "บันทึกในไฟล์" ได้เอง วิธีนี้ทนทานกว่า blob: URL มาก
+        //     เพราะ blob: URL ที่สร้างในหน้าต่าง standalone มักใช้ข้ามบริบทไม่ได้)
+        // 3) blob: URL + a.click() แบบดั้งเดิม -> ใช้ได้ชัวร์บนคอมพิวเตอร์/Android/Safari แบบเปิดในแท็บปกติ
         async function trySaveOrShareBlob(blob, filename) {
             try {
                 const file = new File([blob], filename, { type: blob.type });
@@ -1267,9 +1270,16 @@
                     return;
                 }
             } catch (err) {
-                // ผู้ใช้กด "ยกเลิก" ตอน share ก็จะเข้ามาตรงนี้เหมือนกัน — ไม่ต้อง alert ซ้ำ ปล่อยผ่านเงียบๆ
-                if (err && err.name === 'AbortError') return;
-                console.warn('[Export] Web Share ใช้ไม่ได้ ลอง fallback ดาวน์โหลดแบบปกติแทน:', err);
+                if (err && err.name === 'AbortError') return; // ผู้ใช้กดยกเลิกเอง ไม่ต้องทำอะไรต่อ
+                console.warn('[Export] Web Share ใช้ไม่ได้ ลองวิธีถัดไป:', err);
+            }
+
+            try {
+                const dataUri = await blobToDataURI(blob);
+                const opened = window.open(dataUri, '_blank');
+                if (opened) return;
+            } catch (err) {
+                console.warn('[Export] data URI ใช้ไม่ได้ ลองวิธีสุดท้าย:', err);
             }
 
             try {
@@ -1279,8 +1289,17 @@
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 setTimeout(() => URL.revokeObjectURL(url), 4000);
             } catch (err) {
-                alert('⚠️ ไม่สามารถบันทึก/แชร์ไฟล์ได้บนเบราว์เซอร์นี้\n\nลองเปิดแอปนี้ผ่าน Safari ปกติ (ไม่ใช่ไอคอนที่ติดตั้งจากหน้าจอโฮม) แล้วลอง Export อีกครั้งครับ');
+                alert('⚠️ ไม่สามารถบันทึก/แชร์ไฟล์ได้บนเบราว์เซอร์นี้\n\nลองใช้ปุ่ม "📋 สำรอง (Text)" แทนไปก่อนได้ครับ ข้อมูลจะไม่หาย แค่ได้เป็นข้อความแทนไฟล์ Excel');
             }
+        }
+
+        function blobToDataURI(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
 
 
