@@ -278,6 +278,15 @@
                         ↓ Import Excel <input type="file" id="import-file" class="hidden" accept=".xlsx, .xls" onchange="importFromExcel(event)">
                     </label>
                 </div>
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <button onclick="openBackupModal()" class="bg-emerald-50 shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-emerald-100 text-emerald-700 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-emerald-100">📋 สำรอง (Text)</button>
+                    <button onclick="openRestoreModal()" class="bg-white shadow-[0_4px_20px_rgb(0,0,0,0.02)] border border-slate-100 text-slate-600 text-xs font-semibold py-3.5 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-slate-50">📋 กู้คืน (Text)</button>
+                </div>
+                <button onclick="runHealthCheck()"
+        class="w-full bg-slate-50 text-slate-500 text-xs font-semibold py-3.5 rounded-2xl mb-3
+               active:scale-95 transition-all border border-slate-100
+               flex items-center justify-center gap-2 cursor-pointer hover:bg-slate-100">
+    🩺 ตรวจสอบข้อมูล (Data Health Check)</button>
                 <button onclick="clearAllData()"
         class="w-full bg-red-50/50 text-red-500 text-xs font-semibold py-3.5 rounded-2xl
                active:scale-95 transition-all border border-red-100/50
@@ -394,6 +403,30 @@
             <div class="flex gap-3 mt-8">
                 <button onclick="closeEditModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 rounded-xl cursor-pointer transition-colors text-sm">Cancel</button>
                 <button onclick="saveEdit()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-xl cursor-pointer transition-colors text-sm shadow-md">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="backup-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-md z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2rem] p-7 w-full max-w-sm shadow-2xl max-h-[90vh] flex flex-col border border-white">
+            <h3 class="text-xl font-bold mb-1 text-slate-900">📋 สำรองข้อมูล (Text Backup)</h3>
+            <p class="text-xs text-slate-500 mb-4 font-medium">ไม่ใช้ไลบรารีใดๆ ทำงานได้แม้ออฟไลน์ 100% — กด "เลือกทั้งหมด" แล้ว copy ไปวางเก็บไว้ใน Notes / LINE Keep / อีเมลถึงตัวเองก็ได้ เก็บไว้กู้คืนภายหลังได้เสมอ</p>
+            <textarea id="backup-textarea" readonly class="w-full flex-1 min-h-[200px] bg-slate-50 border border-slate-100 rounded-2xl p-4 text-[10px] font-mono outline-none resize-none mb-4" onclick="this.select()"></textarea>
+            <div class="flex gap-3">
+                <button onclick="closeBackupModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 rounded-xl cursor-pointer transition-colors text-sm">ปิด</button>
+                <button onclick="selectAllBackupText()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-xl cursor-pointer transition-colors text-sm shadow-md">เลือกทั้งหมด</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="restore-modal" class="hidden fixed inset-0 bg-slate-900/20 backdrop-blur-md z-50 flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2rem] p-7 w-full max-w-sm shadow-2xl max-h-[90vh] flex flex-col border border-white">
+            <h3 class="text-xl font-bold mb-1 text-slate-900">📋 กู้คืนข้อมูล (จาก Text Backup)</h3>
+            <p class="text-xs text-slate-500 mb-4 font-medium">วางข้อความสำรองที่เคย copy เก็บไว้ลงในช่องนี้ แล้วกดกู้คืน</p>
+            <textarea id="restore-textarea" placeholder="วางข้อความสำรองที่นี่..." class="w-full flex-1 min-h-[200px] bg-slate-50 border border-slate-100 rounded-2xl p-4 text-[10px] font-mono outline-none resize-none mb-4"></textarea>
+            <div class="flex gap-3">
+                <button onclick="closeRestoreModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 rounded-xl cursor-pointer transition-colors text-sm">ยกเลิก</button>
+                <button onclick="confirmRestoreFromText()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3.5 rounded-xl cursor-pointer transition-colors text-sm shadow-md">กู้คืนข้อมูล</button>
             </div>
         </div>
     </div>
@@ -558,7 +591,51 @@
 
         // ================== LocalStorage Handlers ==================
         function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            // ใช้ crypto.randomUUID() ถ้าเบราว์เซอร์รองรับ (กันชนกัน 100%)
+            // เหลือแบบเดิมไว้เป็น fallback เผื่อเบราว์เซอร์เก่ามาก
+            if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+                return crypto.randomUUID();
+            }
+            return Date.now().toString(36) + Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+        }
+
+        // ================== Data Health Check (ตรวจ + ซ่อม id ซ้ำ) ==================
+        // ไม่ต้องใช้ remote debug — ใช้ alert/confirm ธรรมดา ใช้ได้ทั้ง iOS/Android
+        function runHealthCheck() {
+            const idCount = {};
+            inventory.forEach(item => { idCount[item.id] = (idCount[item.id] || 0) + 1; });
+            const dupIds = Object.keys(idCount).filter(id => idCount[id] > 1);
+
+            if (dupIds.length === 0) {
+                alert(`✅ ตรวจสอบเสร็จแล้ว\n\nพบข้อมูลทั้งหมด ${inventory.length} รายการ\nไม่มี ID ซ้ำกันเลย ระบบปกติดีครับ`);
+                return;
+            }
+
+            const affectedCount = dupIds.reduce((sum, id) => sum + idCount[id], 0);
+            const sample = dupIds.slice(0, 5).map(id => {
+                const items = inventory.filter(i => i.id === id);
+                return `• "${items[0].name}" ซ้ำกัน ${items.length} รายการ (สถานะ: ${items.map(i => i.status).join(', ')})`;
+            }).join('\n');
+
+            const wantsFix = confirm(
+                `⚠️ พบปัญหา: มี ID ซ้ำกันจำนวน ${dupIds.length} กลุ่ม (รวม ${affectedCount} รายการ)\n\n${sample}\n\nนี่คือสาเหตุที่การ์ดบางใบ "หายไป" ตอนขาย เพราะระบบสับสนว่าจะอัปเดตใบไหน\n\nกด "ตกลง" เพื่อซ่อมอัตโนมัติตอนนี้เลย (แจก ID ใหม่ให้รายการที่ซ้ำ ข้อมูลเดิมทุกอย่างยังอยู่ครบ ไม่มีอะไรหาย)\nกด "ยกเลิก" เพื่อออกโดยไม่แก้`
+            );
+
+            if (!wantsFix) return;
+
+            const seen = new Set();
+            let fixedCount = 0;
+            inventory.forEach(item => {
+                if (seen.has(item.id)) {
+                    item.id = generateId();
+                    fixedCount++;
+                } else {
+                    seen.add(item.id);
+                }
+            });
+
+            saveInventory();
+            alert(`✅ ซ่อมเรียบร้อย!\n\nแจก ID ใหม่ให้ ${fixedCount} รายการที่ซ้ำ ข้อมูลครบทุกใบ ลองเข้าไปดูใน Inventory ได้เลยครับ`);
         }
 
         function loadFromLocal() {
@@ -1107,8 +1184,53 @@
             closeEditModal();
         }
 
+        // ================== Text Backup / Restore (ไม่ง้อไลบรารีใดๆ ทำงานได้แม้ XLSX โหลดไม่ขึ้น) ==================
+        function openBackupModal() {
+            const payload = {
+                _type: 'CardVaultBackup', _version: 1, _exportedAt: new Date().toISOString(),
+                inventory, expenses, draws, ownerCapital
+            };
+            document.getElementById('backup-textarea').value = JSON.stringify(payload);
+            document.getElementById('backup-modal').classList.remove('hidden');
+        }
+        function closeBackupModal() { document.getElementById('backup-modal').classList.add('hidden'); }
+        function selectAllBackupText() {
+            const ta = document.getElementById('backup-textarea');
+            ta.focus(); ta.select(); ta.setSelectionRange(0, 999999);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(ta.value).then(() => alert('คัดลอกไปยังคลิปบอร์ดแล้ว! นำไปวางเก็บไว้ที่ไหนก็ได้ครับ')).catch(() => {});
+            }
+        }
+
+        function openRestoreModal() {
+            document.getElementById('restore-textarea').value = '';
+            document.getElementById('restore-modal').classList.remove('hidden');
+        }
+        function closeRestoreModal() { document.getElementById('restore-modal').classList.add('hidden'); }
+        function confirmRestoreFromText() {
+            const raw = document.getElementById('restore-textarea').value.trim();
+            if (!raw) return alert('กรุณาวางข้อความสำรองก่อนครับ');
+            let payload;
+            try { payload = JSON.parse(raw); } catch (e) { return alert('ข้อความไม่ถูกต้อง ไม่สามารถอ่านเป็นข้อมูลได้: ' + e.message); }
+            if (!payload || payload._type !== 'CardVaultBackup' || !Array.isArray(payload.inventory)) {
+                return alert('ข้อความนี้ไม่ใช่ไฟล์สำรองของ CardVault ที่ถูกต้อง');
+            }
+            if (!confirm(`พบข้อมูลสำรอง ${payload.inventory.length} รายการ (สำรองไว้เมื่อ ${payload._exportedAt || 'ไม่ทราบวันที่'})\n\n⚠️ การกู้คืนจะเขียนทับข้อมูลปัจจุบันทั้งหมดในเครื่องนี้ ต้องการดำเนินการต่อหรือไม่?`)) return;
+
+            inventory = payload.inventory || [];
+            expenses = payload.expenses || [];
+            draws = payload.draws || [];
+            ownerCapital = payload.ownerCapital || 0;
+            saveInventory(); saveExpenses(); saveDraws(); saveCapital();
+            closeRestoreModal();
+            alert('✅ กู้คืนข้อมูลเรียบร้อยแล้ว!');
+        }
+
         function exportToExcel() {
             if(inventory.length === 0) return alert('ไม่มีข้อมูล');
+            if (typeof XLSX === 'undefined') {
+                return alert('⚠️ ไม่สามารถ Export ได้ในตอนนี้\n\nไลบรารีที่ใช้สร้างไฟล์ Excel ยังไม่ถูกโหลด/แคชไว้ในเครื่อง (มักเกิดตอนใช้งานออฟไลน์ก่อนที่แอปจะได้เชื่อมเน็ตครั้งแรก)\n\nวิธีแก้: เชื่อมต่ออินเทอร์เน็ตแล้วเปิดแอปอีกครั้งสัก 1 ครั้ง ระบบจะดาวน์โหลดไลบรารีมาเก็บไว้ในเครื่องให้อัตโนมัติ หลังจากนั้นจะ Export แบบออฟไลน์ได้ตลอดไป');
+            }
             const excelData = inventory.map(item => ({
                 'ID': item.id, 'Game': gameNames[item.game] || item.game, 'Card Name': item.name, 'Rarity': item.rarity,
                 'Condition': item.condition || 'NM', 'Buy Price (Cost)': item.cost, 
@@ -1129,6 +1251,11 @@
         function importFromExcel(event) {
             const file = event.target.files[0];
             if (!file) return;
+            if (typeof XLSX === 'undefined') {
+                alert('⚠️ ไม่สามารถ Import ได้ในตอนนี้\n\nไลบรารีที่ใช้อ่านไฟล์ Excel ยังไม่ถูกโหลด/แคชไว้ในเครื่อง\n\nวิธีแก้: เชื่อมต่ออินเทอร์เน็ตแล้วเปิดแอปอีกครั้งสัก 1 ครั้ง แล้วค่อยลอง Import ใหม่');
+                event.target.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -1165,7 +1292,26 @@
                         };
                     });
 
-                    if(confirm(`พบ ${imported.length} รายการ \nกด 'ตกลง' เพื่อเซฟทับข้อมูลเดิม \nกด 'ยกเลิก' เพื่อนำเข้าแบบเพิ่มเติมจากของเดิม`)) {
+                    // กัน ID ซ้ำที่อาจมากับไฟล์ Excel เอง (เช่น copy แถวเพื่อเพิ่มจำนวนแล้วลืมแก้คอลัมน์ ID)
+                    // ถ้าเจอ ID ซ้ำในไฟล์ที่ import เข้ามา จะสุ่ม ID ใหม่ให้รายการที่ซ้ำโดยอัตโนมัติ
+                    const seenImportIds = new Set();
+                    let dupInFileCount = 0;
+                    imported.forEach(row => {
+                        if (seenImportIds.has(row.id)) {
+                            row.id = generateId();
+                            dupInFileCount++;
+                        } else {
+                            seenImportIds.add(row.id);
+                        }
+                    });
+                    // กัน ID ที่ชนกับข้อมูลเดิมในเครื่อง (กรณีนำเข้าแบบ "เพิ่มเติม")
+                    const existingIds = new Set(inventory.map(i => i.id));
+                    imported.forEach(row => {
+                        if (existingIds.has(row.id)) { row.id = generateId(); dupInFileCount++; }
+                        existingIds.add(row.id);
+                    });
+
+                    if(confirm(`พบ ${imported.length} รายการ${dupInFileCount > 0 ? ` (แก้ ID ซ้ำให้ ${dupInFileCount} รายการอัตโนมัติ)` : ''} \nกด 'ตกลง' เพื่อเซฟทับข้อมูลเดิม \nกด 'ยกเลิก' เพื่อนำเข้าแบบเพิ่มเติมจากของเดิม`)) {
                         inventory = imported;
                     } else {
                         inventory = inventory.concat(imported);
