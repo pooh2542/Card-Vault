@@ -1245,8 +1245,44 @@
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Card Inventory");
-            XLSX.writeFile(workbook, `CardVault_Offline_Backup_${new Date().toISOString().split('T')[0]}.xlsx`);
+            const filename = `CardVault_Offline_Backup_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            // สร้างไฟล์เป็น bytes เอง (แทนที่จะให้ XLSX.writeFile จัดการดาวน์โหลดให้)
+            // เพราะวิธีดาวน์โหลดแบบเดิม (a.click()) ใช้ไม่ได้เมื่อแอปถูกเปิดแบบ
+            // "ติดตั้งจากหน้าจอโฮม" (standalone) บน iOS Safari — กดแล้วเงียบ ไม่มีอะไรเกิดขึ้น
+            const wbBytes = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbBytes], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+            trySaveOrShareBlob(blob, filename);
         }
+
+        // พยายามบันทึก/แชร์ไฟล์ ให้ครอบคลุมทุกสถานการณ์:
+        // 1) ถ้าเบราว์เซอร์รองรับ Web Share API แบบมีไฟล์ (iOS Safari 15+, Android Chrome) -> เด้ง share sheet ให้เลือก "บันทึกใน Files" / AirDrop / LINE ฯลฯ (ใช้ได้แม้เปิดเป็นแอป standalone)
+        // 2) ถ้าไม่รองรับ -> fallback เป็นการดาวน์โหลดแบบปกติผ่านเบราว์เซอร์ (ใช้ได้บนคอมพิวเตอร์และ Android/iOS ที่เปิดผ่าน Safari ปกติ ไม่ใช่โหมด standalone)
+        async function trySaveOrShareBlob(blob, filename) {
+            try {
+                const file = new File([blob], filename, { type: blob.type });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: filename });
+                    return;
+                }
+            } catch (err) {
+                // ผู้ใช้กด "ยกเลิก" ตอน share ก็จะเข้ามาตรงนี้เหมือนกัน — ไม่ต้อง alert ซ้ำ ปล่อยผ่านเงียบๆ
+                if (err && err.name === 'AbortError') return;
+                console.warn('[Export] Web Share ใช้ไม่ได้ ลอง fallback ดาวน์โหลดแบบปกติแทน:', err);
+            }
+
+            try {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+            } catch (err) {
+                alert('⚠️ ไม่สามารถบันทึก/แชร์ไฟล์ได้บนเบราว์เซอร์นี้\n\nลองเปิดแอปนี้ผ่าน Safari ปกติ (ไม่ใช่ไอคอนที่ติดตั้งจากหน้าจอโฮม) แล้วลอง Export อีกครั้งครับ');
+            }
+        }
+
 
         function importFromExcel(event) {
             const file = event.target.files[0];
